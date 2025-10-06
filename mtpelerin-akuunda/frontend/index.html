@@ -138,6 +138,18 @@
             API_TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
         };
 
+        // CORRECTION : Branding avec paramètres URL encoded comme dans la documentation
+        const BRANDING = {
+            mylogo: 'https%3A%2F%2Fraw.githubusercontent.com%2FDavid-akuundapay%2Fmtpelerin-akuunda%2Fmain%2Fmtpelerin-akuunda%2Fimages%2Ffavicon.png',
+            primary: '%23F88809',    // Orange Akuunda URL encoded
+            success: '%23F88809',    // Orange pour CTA URL encoded (pas de vert)
+            lang: 'auto',
+            display: 'direct',
+            hideTabs: 'true',
+            mode: 'direct',
+            hideNetworkSwitch: 'true'
+        };
+
         function parseUrlParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const params = {};
@@ -197,29 +209,22 @@
         function formatWidgetUrl(params) {
             const tab = params.tab || params.type || params.tabs || 'sell';
             
-            // CONFIGURATION CORRECTE POUR N'AFFICHER QU'UN SEUL SERVICE
+            // CORRECTION : Utiliser les paramètres de branding URL encoded exacts
             const baseParams = {
                 '_ctkn': CONFIG.API_TOKEN,
                 'tab': tab,
-                'lang': params.lang || 'auto',
+                'lang': BRANDING.lang,
                 
-                // CORRECTION : Paramètres pour FORCER un seul service
-                'display': 'direct',          // Affiche directement sans navigation
-                'hideTabs': 'true',           // Cache les onglets Acheter/Vendre/Échanger
-                'mode': 'direct',             // Mode direct sans choix
+                // CORRECTION : Paramètres de branding URL encoded comme dans la doc
+                'mylogo': BRANDING.mylogo,    // Logo Akuunda URL encoded
+                'primary': BRANDING.primary,  // Couleur primaire orange URL encoded
+                'success': BRANDING.success,  // CTA orange URL encoded (pas de vert)
                 
-                // CORRECTION : Branding orange pour TOUS les boutons
-                'primaryColor': 'F88809',     // Orange Akuunda principal
-                'primaryTextColor': 'FFFFFF', // Texte blanc sur boutons orange
-                'secondaryColor': 'FFA500',   // Orange secondaire
-                'background': 'F8F9FA',       // Fond clair
-                'successColor': 'F88809',     // Orange pour succès (pas de vert)
-                'warningColor': 'FF8C00',     // Orange pour avertissements
-                'infoColor': 'F88809',        // Orange pour infos
-                
-                // CORRECTION : Interface simplifiée
-                'hideNetworkSwitch': 'true',
-                'hideLogo': 'false',
+                // Paramètres pour afficher uniquement le service sélectionné
+                'display': BRANDING.display,
+                'hideTabs': BRANDING.hideTabs,
+                'mode': BRANDING.mode,
+                'hideNetworkSwitch': BRANDING.hideNetworkSwitch,
                 
                 // Paramètres communs
                 'net': params.net || 'matic_mainnet',
@@ -236,7 +241,7 @@
                 baseParams.ssa = params.ssa || '100';
                 baseParams.snet = params.snet || 'matic_mainnet';
                 
-                // SUPPRIMER tous les paramètres ACHAT pour éviter les conflits
+                // SUPPRIMER tous les paramètres ACHAT
                 delete baseParams.bsc;
                 delete baseParams.bdc;
                 delete baseParams.bsa;
@@ -251,7 +256,7 @@
                 baseParams.dnet = params.dnet || 'matic_mainnet';
                 baseParams.pm = params.pm || 'card';
                 
-                // SUPPRIMER tous les paramètres VENTE pour éviter les conflits
+                // SUPPRIMER tous les paramètres VENTE
                 delete baseParams.ssc;
                 delete baseParams.sdc;
                 delete baseParams.ssa;
