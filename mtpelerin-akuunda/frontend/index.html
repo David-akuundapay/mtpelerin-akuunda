@@ -1,373 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Akuunda Pay - Crypto Exchange</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer-when-downgrade">
-    
-    <link rel="icon" href="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/favicon.png" type="image/png">
-    
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            margin: 0; padding: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') no-repeat center center fixed;
-            background-size: cover;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh;
-        }
-        
-        .container { width: 100%; max-width: 450px; margin: 20px; }
-        
-        .header { text-align: center; margin-bottom: 30px; }
-        
-        .hero-image {
-            width: 400px; 
-            height: auto; 
-            border-radius: 15px; 
-            object-fit: contain;
-            border: 5px solid #FFFFFF; 
-            box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
-            margin: 0 auto 25px auto; 
-            display: block;
-            max-width: 95%;
-        }
-        
-        .header h1 {
-            font-size: 2.4rem; color: #FFFFFF; margin-bottom: 8px;
-            text-shadow: 2px 2px 8px rgba(57, 22, 89, 0.8); font-weight: 700;
-            background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        
-        .header p { color: #FFFFFF; font-size: 1.2rem; text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500; }
-        
-        .widget-container { display: none; }
-        
-        .error-message, .loading {
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
-            text-align: center; padding: 40px 30px; color: #391659; border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(57, 22, 89, 0.3); border: 2px solid rgba(153, 113, 190, 0.3);
-        }
-        
-        .error-message h2, .loading h2 { color: #391659; margin-bottom: 15px; font-size: 1.6rem; font-weight: 700; }
-        
-        .error-message p, .loading p { color: #9971BE; line-height: 1.5; }
-        
-        iframe {
-            width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
-            box-shadow: 0 25px 50px rgba(57, 22, 89, 0.4); border: 3px solid #9971BE;
-        }
-        
-        .akuunda-footer {
-            text-align: center; margin-top: 25px; color: #FFFFFF; font-size: 1rem;
-            text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500;
-            background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        
-        .url-example {
-            background: rgba(57, 22, 89, 0.1); padding: 12px; border-radius: 10px; margin-top: 20px;
-            font-family: 'Courier New', monospace; font-size: 0.85rem; color: #391659; word-break: break-all;
-            border: 1px solid rgba(153, 113, 190, 0.3);
-        }
-        
-        .param-info {
-            background: rgba(255, 255, 255, 0.8); padding: 15px; border-radius: 10px; margin-top: 15px;
-            font-size: 0.8rem; color: #391659;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Akuunda Pay - Exchange</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0720 url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg') center/cover fixed no-repeat;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .wrap{width:100%;max-width:520px}
+    .card{background:rgba(255,255,255,.96);border-radius:18px;border:2px solid rgba(153,113,190,.25);box-shadow:0 20px 50px rgba(26,16,59,.35);padding:20px}
+    h1{margin:0 0 6px;background:linear-gradient(135deg,#fff, #F88809);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{margin:0 0 14px;color:#5a3a86}
+    .badge{background:#391659;color:#fff;font-weight:700;border-radius:10px;padding:10px 14px;text-align:center;margin:10px 0}
+    .muted{color:#7c5aa6}
+    .examples{font-family:ui-monospace,Menlo,Consolas,monospace;background:#f6f3fb;border:1px solid #e5dbff;padding:10px;border-radius:10px;word-break:break-all}
+    iframe{width:100%;height:680px;border:none;border-radius:16px;box-shadow:0 22px 44px rgba(26,16,59,.35);border:3px solid #9971BE}
+    .hidden{display:none}
+    .foot{margin-top:10px;text-align:center;font-weight:600;background:linear-gradient(135deg,#fff,#F88809);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg" alt="Akuunda Pay" class="hero-image">
-            <h1>Akuunda Pay</h1>
-            <p>Échange Crypto Sécurisé</p>
-        </div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Akuunda Pay</h1>
+      <p class="subtitle">Échange crypto sécurisé</p>
 
-        <div class="error-message" id="errorMessage">
-            <h2>🔧 Configuration Requise</h2>
-            <p>Paramètres manquants dans l'URL.</p>
-            <div class="url-example">
-                <strong>Exemple VENTE:</strong><br>
-                ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=matic_mainnet&net=matic_mainnet&addr=&code=&hash=<br><br>
-                <strong>Exemple ACHAT:</strong><br>
-                ?tab=buy&bsc=EUR&bdc=USDT&bsa=100&dnet=matic_mainnet&net=matic_mainnet&pm=card&addr=&code=&hash=
-            </div>
-            <div class="param-info">
-                <strong>Paramètres disponibles:</strong><br>
-                tab, ssc, sdc, ssa, snet, net, bsc, bdc, bsa, dnet, pm, addr, code, hash, curs, crys
-            </div>
-        </div>
+      <div id="indicator" class="badge">🔄 Chargement…</div>
 
-        <div class="loading" id="loadingMessage" style="display: none;">
-            <h2>⏳ Chargement...</h2>
-            <p>Initialisation de la plateforme Akuunda Pay</p>
+      <div id="panelError" class="">
+        <p class="muted">Paramètres manquants ou invalides dans l’URL.</p>
+        <div class="examples">
+          <strong>SELL (crypto → EUR) :</strong><br>
+          <code>?tab=sell&ssc=USDC&sdc=EUR&ssa=125.5&net=matic_mainnet&snet=matic_mainnet</code>
+          <br><br>
+          <strong>BUY (EUR → crypto) :</strong><br>
+          <code>?tab=buy&bsc=EUR&bdc=USDC&bsa=125.5&net=matic_mainnet&dnet=matic_mainnet&pm=card</code>
         </div>
+      </div>
 
-        <div class="widget-container" id="widgetContainer">
-            <iframe id="widget" allow="usb; ethereum; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Exchange Platform"></iframe>
-        </div>
-        
-        <div class="akuunda-footer">💳 Service sécurisé par Akuunda Pay</div>
+      <div id="panelLoading" class="hidden">
+        <p class="muted">Initialisation du widget…</p>
+      </div>
+
+      <div id="panelWidget" class="hidden">
+        <iframe id="widget" allow="payment; clipboard-write; ethereum; usb" title="Akuunda Pay Widget"></iframe>
+      </div>
+
+      <div class="foot">💳 Service par Akuunda Pay</div>
     </div>
+  </div>
 
-    <script>
-        const CONFIG = {
-            BACKEND_URL: 'https://mtpay.akuunda-pay.io/api/mtpelerin',
-            API_TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
-        };
+  <script>
+    // ===== Config =====
+    const CONFIG = {
+      TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
+    };
 
-        const BRANDING = {
-            mylogo: 'https%3A%2F%2Fraw.githubusercontent.com%2FDavid-akuundapay%2Fmtpelerin-akuunda%2Fmain%2Fmtpelerin-akuunda%2Fimages%2Ffavicon.png',
-            primary: '%23F88809',    // Orange Akuunda URL encoded
-            success: '%23F88809',    // Orange pour CTA URL encoded (pas de vert)
-            lang: 'auto',
-            display: 'direct',
-            hideTabs: 'true',
-            mode: 'direct',
-            hideNetworkSwitch: 'true'
-        };
+    // Couleurs (versions avec et sans # pour compatibilité)
+    const ORANGE_HEX = 'F88809';
+    const ORANGE_HEX_HASH = '%23F88809'; // encodé pour l’URL
+    const WHITE_HEX = 'FFFFFF';
+    const WHITE_HEX_HASH = '%23FFFFFF';
+    const BG_HEX = 'F8F9FA';
 
-        function parseUrlParameters() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const params = {};
-            
-            for (const [key, value] of urlParams.entries()) {
-                params[key] = value;
-            }
-            
-            // Déterminer le tab en fonction des paramètres disponibles
-            let tab = params.tab || params.type || params.tabs || 'sell';
-            
-            // Seulement Buy et Sell sont autorisés
-            if (tab === 'swap') {
-                tab = 'sell';
-            }
-            
-            let requiredParams = [];
-            
-            if (tab === 'sell') {
-                requiredParams = ['ssc', 'sdc']; // Source crypto, destination fiat
-            } else if (tab === 'buy') {
-                requiredParams = ['bsc', 'bdc']; // Source fiat, destination crypto
-            }
-            
-            const missingParams = requiredParams.filter(param => !params[param]);
-            
-            if (missingParams.length > 0) {
-                return { valid: false, missing: missingParams, params, tab };
-            }
-            
-            return { valid: true, params, tab };
-        }
+    // ===== Helpers =====
+    const $ = (id) => document.getElementById(id);
+    const show = (id) => $(id).classList.remove('hidden');
+    const hide = (id) => $(id).classList.add('hidden');
 
-        function formatWidgetUrl(params) {
-            const tab = params.tab || params.type || params.tabs || 'sell';
-            
-            const baseParams = {
-                '_ctkn': CONFIG.API_TOKEN,
-                'tab': tab,
-                'lang': BRANDING.lang,
-                
-                // Branding Akuunda avec paramètres URL encoded
-                'mylogo': BRANDING.mylogo,
-                'primary': BRANDING.primary,
-                'success': BRANDING.success,
-                
-                // Paramètres pour afficher uniquement le service sélectionné
-                'display': BRANDING.display,
-                'hideTabs': BRANDING.hideTabs,
-                'mode': BRANDING.mode,
-                'hideNetworkSwitch': BRANDING.hideNetworkSwitch,
-                
-                // Paramètres communs
-                'net': params.net || 'matic_mainnet',
-                'addr': params.addr || '',
-                'code': params.code || '',
-                'hash': params.hash || ''
-            };
+    function getParams(){
+      const p = {}; const q = new URLSearchParams(location.search);
+      for(const [k,v] of q.entries()) p[k]=v;
+      return p;
+    }
 
-            // Forcer un seul service en supprimant les paramètres conflictuels
-            if (tab === 'sell') {
-                // Service VENTE uniquement
-                baseParams.ssc = params.ssc || 'USDT';
-                baseParams.sdc = params.sdc || 'EUR';
-                baseParams.ssa = params.ssa || '100';
-                baseParams.snet = params.snet || 'matic_mainnet';
-                
-                // SUPPRIMER tous les paramètres ACHAT
-                delete baseParams.bsc;
-                delete baseParams.bdc;
-                delete baseParams.bsa;
-                delete baseParams.dnet;
-                delete baseParams.pm;
-                
-            } else if (tab === 'buy') {
-                // Service ACHAT uniquement
-                baseParams.bsc = params.bsc || 'EUR';
-                baseParams.bdc = params.bdc || 'USDT';
-                baseParams.bsa = params.bsa || '100';
-                baseParams.dnet = params.dnet || 'matic_mainnet';
-                baseParams.pm = params.pm || 'card';
-                
-                // SUPPRIMER tous les paramètres VENTE
-                delete baseParams.ssc;
-                delete baseParams.sdc;
-                delete baseParams.ssa;
-                delete baseParams.snet;
-            }
+    function pickTab(raw){
+      const v = (raw||'').toLowerCase();
+      if (v === 'buy' || v === 'sell') return v;
+      return null;
+    }
 
-            // Nettoyer les paramètres vides
-            Object.keys(baseParams).forEach(key => {
-                if (baseParams[key] === '' || baseParams[key] === null || baseParams[key] === undefined) {
-                    delete baseParams[key];
-                }
-            });
+    function needKeys(tab){
+      return tab === 'sell' ? ['ssc','sdc'] : ['bsc','bdc'];
+    }
 
-            const urlParams = new URLSearchParams(baseParams);
-            return `https://widget.mtpelerin.com/?${urlParams.toString()}`;
-        }
+    function hasRequired(params, tab){
+      return needKeys(tab).every(k => params[k] && String(params[k]).trim() !== '');
+    }
 
-        function setupWidgetEventListener() {
-            window.addEventListener('message', (event) => {
-                if (!event.origin.includes('mtpelerin.com')) return;
-                
-                try {
-                    const message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                    if (!message?.type) return;
+    // Construit une URL MtPelerin qui n’affiche QUE l’onglet choisi
+    function buildWidgetUrl(params){
+      const tab = pickTab(params.tab || params.type || params.tabs) || 'buy';
 
-                    switch(message.type) {
-                        case 'orderCreated':
-                            handleOrderCreated(message.data);
-                            break;
-                        case 'paymentSubmitted':
-                            handlePaymentSubmitted(message.data);
-                            break;
-                        case 'orderCompleted':
-                            handleOrderCompleted(message.data);
-                            break;
-                        case 'orderFailed':
-                            handleOrderFailed(message.data);
-                            break;
-                    }
-                } catch (error) {}
-            });
-        }
+      // base strict : forcer un seul onglet visible et actif
+      const base = {
+        _ctkn: CONFIG.TOKEN,
+        tab,               // onglet actif
+        tabs: tab,         // n’affiche que cet onglet
+        lang: (params.lang || 'auto'),
+        // Couleurs (on passe plusieurs clés pour maximiser la prise en compte côté widget)
+        primaryColor: ORANGE_HEX,
+        primaryTextColor: WHITE_HEX,
+        secondaryColor: ORANGE_HEX,
+        background: BG_HEX,
+        successColor: ORANGE_HEX,
+        warningColor: ORANGE_HEX,
+        infoColor: ORANGE_HEX,
+        // variantes encodées (#) au cas où le widget l’exige
+        primaryColorHex: ORANGE_HEX_HASH,
+        primaryTextColorHex: WHITE_HEX_HASH,
+        accentColor: ORANGE_HEX,       // alias possibles
+        accentColorHex: ORANGE_HEX_HASH,
+        // réseau commun
+        net: params.net || 'matic_mainnet',
+        addr: params.addr || '',
+        code: params.code || '',
+        hash: params.hash || ''
+      };
 
-        async function handleOrderCreated(order) {
-            if (!order?.id) return;
-            
-            const criticalData = {
-                orderId: order.id,
-                orderType: order.type,
-                currencyIn: order.currencyIn,
-                currencyOut: order.currencyOut,
-                amountIn: order.valueIn,
-                amountOut: order.valueOut,
-                depositAddress: order.cryptoAddress || order.offRampAddress,
-                network: order.network,
-                timestamp: new Date().toISOString(),
-                source: 'akuunda_pay_widget'
-            };
+      if (tab === 'sell'){
+        base.ssc  = params.ssc  || 'USDC';
+        base.sdc  = params.sdc  || 'EUR';
+        base.ssa  = params.ssa  || '100';
+        base.snet = params.snet || 'matic_mainnet';
+        // purge des clés BUY
+        delete base.bsc; delete base.bdc; delete base.bsa; delete base.dnet; delete base.pm;
+      } else {
+        base.bsc  = params.bsc  || 'EUR';
+        base.bdc  = params.bdc  || 'USDC';
+        base.bsa  = params.bsa  || '100';
+        base.dnet = params.dnet || 'matic_mainnet';
+        base.pm   = params.pm   || 'card';
+        // purge des clés SELL
+        delete base.ssc; delete base.sdc; delete base.ssa; delete base.snet;
+      }
 
-            await sendToBackend('order/created', criticalData);
-        }
+      // Nettoyage des vides
+      Object.keys(base).forEach(k => { if (base[k] === '') delete base[k]; });
 
-        async function handlePaymentSubmitted(payment) {
-            const paymentData = {
-                orderId: payment.orderId,
-                paymentType: payment.paymentType,
-                transactionHash: payment.transactionHash,
-                timestamp: new Date().toISOString()
-            };
+      const q = new URLSearchParams(base);
+      return `https://widget.mtpelerin.com/?${q.toString()}`;
+    }
 
-            await sendToBackend('payment/submitted', paymentData);
-        }
+    function updateIndicator(tab, p){
+      if (tab === 'sell'){
+        const from = p.ssc || 'USDC', to = p.sdc || 'EUR', amt = p.ssa ? ` | Montant: ${p.ssa} ${from}` : '';
+        $('indicator').textContent = `💰 SELL : ${from} → ${to}${amt}`;
+      } else {
+        const from = p.bsc || 'EUR', to = p.bdc || 'USDC', amt = p.bsa ? ` | Montant: ${p.bsa} ${from}` : '';
+        $('indicator').textContent = `💳 BUY : ${from} → ${to}${amt}`;
+      }
+    }
 
-        async function handleOrderCompleted(order) {
-            const completionData = {
-                orderId: order.id,
-                status: 'completed',
-                finalAmount: order.finalAmount,
-                timestamp: new Date().toISOString()
-            };
+    // ===== Init =====
+    (function(){
+      const p = getParams();
+      const tab = pickTab(p.tab || p.type || p.tabs);
 
-            await sendToBackend('order/completed', completionData);
-        }
+      if (!tab || !hasRequired(p, tab)){
+        // erreur (tab absent/invalid OU clés minimales manquantes)
+        show('panelError'); hide('panelLoading'); hide('panelWidget');
+        $('indicator').textContent = '⚠️ Paramètres requis manquants';
+        return;
+      }
 
-        async function handleOrderFailed(order) {
-            const failureData = {
-                orderId: order.id,
-                status: 'failed',
-                error: order.error,
-                timestamp: new Date().toISOString()
-            };
+      // ok → charge widget
+      hide('panelError'); show('panelLoading'); hide('panelWidget');
+      updateIndicator(tab, p);
 
-            await sendToBackend('order/failed', failureData);
-        }
+      const url = buildWidgetUrl(p);
+      const iframe = $('widget');
 
-        async function sendToBackend(endpoint, data) {
-            try {
-                const response = await fetch(`${CONFIG.BACKEND_URL}/${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+      iframe.onload  = () => { hide('panelLoading'); show('panelWidget'); };
+      iframe.onerror = () => { hide('panelLoading'); show('panelError'); $('indicator').textContent = '❌ Échec de chargement du widget'; };
 
-                if (response.ok) {
-                    console.log(`✅ Backend ${endpoint}: Succès`);
-                }
-            } catch (error) {
-                console.log(`📦 ${endpoint}: Sauvegarde locale`);
-            }
-        }
-
-        function updateUI(state) {
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('widgetContainer').style.display = 'none';
-            
-            if (state === 'error') document.getElementById('errorMessage').style.display = 'block';
-            if (state === 'loading') document.getElementById('loadingMessage').style.display = 'block';
-            if (state === 'loaded') document.getElementById('widgetContainer').style.display = 'block';
-        }
-
-        function loadWidget(params) {
-            updateUI('loading');
-            
-            const widgetUrl = formatWidgetUrl(params);
-            const iframe = document.getElementById('widget');
-
-            iframe.onload = () => {
-                updateUI('loaded');
-            };
-
-            iframe.onerror = () => {
-                updateUI('error');
-            };
-
-            iframe.src = widgetUrl;
-        }
-
-        function initializeApp() {
-            setupWidgetEventListener();
-            
-            const urlCheck = parseUrlParameters();
-            
-            if (!urlCheck.valid) {
-                updateUI('error');
-                return;
-            }
-            
-            loadWidget(urlCheck.params);
-        }
-
-        document.addEventListener('DOMContentLoaded', initializeApp);
-    </script>
+      // Sécurité: neutraliser tout résidu d’autre onglet dans l’URL finale
+      iframe.src = url;
+    })();
+  </script>
 </body>
 </html>
