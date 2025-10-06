@@ -6,143 +6,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="no-referrer-when-downgrade">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') center/cover no-repeat fixed;
       display: flex; justify-content: center; align-items: center; min-height: 100vh;
     }
-    .container { max-width: 460px; width: 100%; padding: 20px; }
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 {
-      font-size: 2rem; font-weight: 700;
-      background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    .container { width: 100%; max-width: 460px; padding: 20px; }
+    .header { text-align: center; margin-bottom: 0; }
+    .hero-image {
+      width: 110%; max-width: 110%; border-radius: 16px;
+      border: 5px solid #FFFFFF;
+      box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
     }
-    .header p { color: #fff; text-shadow: 1px 1px 3px #391659; }
-    .badge { background: rgba(57, 22, 89, 0.85); color: #fff; padding: 10px 16px; border-radius: 10px; margin: 10px 0; text-align: center; font-weight: bold; }
-    .panel { background: rgba(255,255,255,.95); border-radius: 20px; padding: 20px; box-shadow: 0 15px 30px rgba(57,22,89,0.2); margin-top: 15px; display: none; }
-    .panel.visible { display: block; }
-    .iframe-box { display: none; }
-    .iframe-box.visible { display: block; }
-    iframe { width: 100%; height: 680px; border: none; border-radius: 16px; box-shadow: 0 25px 50px rgba(57,22,89,0.4); }
-    .footer { text-align: center; margin-top: 20px; font-weight: 500; background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    code { font-family: monospace; font-size: 0.9rem; background: #f3f0ff; padding: 4px 6px; border-radius: 6px; display: block; margin-top: 8px; }
+    .header h1, .header p, .service-indicator { display: none; }
+    .error-message, .loading { display: none; }
+    .widget-container { display: block; }
+    iframe {
+      width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
+      box-shadow: 0 25px 50px rgba(57, 22, 89, 0.4);
+    }
+    .akuunda-footer {
+      text-align: center; margin-top: 25px; color: #FFFFFF; font-size: 1rem;
+      text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg" alt="Akuunda Pay" style="max-width: 100%; border-radius: 16px;">
-      <h1>Akuunda Pay</h1>
-      <p>Exchange Crypto Sécurisé</p>
+      <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg" alt="Akuunda Pay" class="hero-image">
     </div>
 
-    <div id="indicator" class="badge">Chargement du service...</div>
-
-    <div id="errorPanel" class="panel">
-      <strong>Paramètres manquants ou invalides.</strong>
-      <p>Exemples valides :</p>
-      <code>?tab=buy&bsc=EUR&bdc=USDT&bsa=100&net=matic_mainnet&dnet=matic_mainnet&pm=card</code>
-      <code>?tab=sell&ssc=USDT&sdc=EUR&ssa=100&net=matic_mainnet&snet=matic_mainnet</code>
+    <div class="widget-container" id="widgetContainer">
+      <iframe id="widget" allow="usb; ethereum; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Exchange Platform"></iframe>
     </div>
-
-    <div id="widgetBox" class="iframe-box">
-      <iframe id="widget" allow="payment; clipboard-write; ethereum; usb"></iframe>
-    </div>
-
-    <div class="footer">💳 Service propulsé par Akuunda Pay</div>
+    
+    <div class="akuunda-footer">💳 Service sécurisé par Akuunda Pay</div>
   </div>
 
   <script>
-    const config = {
-      token: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
+    const CONFIG = {
+      API_TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
     };
 
-    const orange = 'F88809';
-    const white = 'FFFFFF';
-    const bg = 'F8F9FA';
+    const BRANDING = {
+      primaryColor: 'F88809',
+      primaryTextColor: 'FFFFFF',
+      secondaryColor: 'FFA500',
+      background: 'F8F9FA',
+      successColor: 'F88809',
+      warningColor: 'FF8C00',
+      infoColor: 'F88809',
+      lang: 'auto',
+      hideNetworkSwitch: 'true',
+      display: 'direct'
+    };
 
-    function qs() {
-      const out = {}; const s = new URLSearchParams(location.search);
-      for (const [k, v] of s.entries()) out[k] = v;
-      return out;
-    }
-
-    function pickTab(raw) {
-      const t = (raw || '').toLowerCase();
-      return (t === 'buy' || t === 'sell') ? t : null;
-    }
-
-    function validParams(p, tab) {
-      const keys = tab === 'buy' ? ['bsc','bdc'] : ['ssc','sdc'];
-      return keys.every(k => p[k]);
-    }
-
-    function updateBadge(tab, p) {
-      const el = document.getElementById('indicator');
-      if (tab === 'buy') {
-        el.textContent = `💳 ACHAT : ${p.bsc} → ${p.bdc} | Montant: ${p.bsa || '100'} ${p.bsc}`;
-      } else {
-        el.textContent = `💰 VENTE : ${p.ssc} → ${p.sdc} | Montant: ${p.ssa || '100'} ${p.ssc}`;
+    function parseUrlParameters() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const params = {};
+      for (const [key, value] of urlParams.entries()) {
+        params[key] = value;
       }
+      let tab = (params.tab || '').toLowerCase();
+      if (tab !== 'buy' && tab !== 'sell') return { valid: false };
+
+      const required = tab === 'buy' ? ['bsc', 'bdc'] : ['ssc', 'sdc'];
+      const valid = required.every(k => params[k]);
+      return valid ? { valid: true, params, tab } : { valid: false };
     }
 
-    function buildUrl(p, tab) {
-      const base = {
-        _ctkn: config.token,
-        tab: tab,
-        tabs: tab,
-        hideTabs: 'true',
-        lang: p.lang || 'auto',
-        primaryColor: orange,
-        primaryTextColor: white,
-        secondaryColor: orange,
-        background: bg,
-        successColor: orange,
-        warningColor: orange,
-        infoColor: orange,
-        display: 'direct',
-        net: p.net || 'matic_mainnet',
-        addr: p.addr || '',
-        code: p.code || '',
-        hash: p.hash || ''
+    function formatWidgetUrl(params, tab) {
+      const baseParams = {
+        '_ctkn': CONFIG.API_TOKEN,
+        'tab': tab,
+        'tabs': tab,
+        'hideTabs': 'true',
+        'display': BRANDING.display,
+        'lang': BRANDING.lang,
+        'primaryColor': BRANDING.primaryColor,
+        'primaryTextColor': BRANDING.primaryTextColor,
+        'secondaryColor': BRANDING.secondaryColor,
+        'background': BRANDING.background,
+        'successColor': BRANDING.successColor,
+        'warningColor': BRANDING.warningColor,
+        'infoColor': BRANDING.infoColor,
+        'hideNetworkSwitch': BRANDING.hideNetworkSwitch,
+        'net': params.net || 'matic_mainnet',
+        'addr': params.addr || '',
+        'code': params.code || '',
+        'hash': params.hash || ''
       };
 
-      if (tab === 'buy') {
-        base.bsc = p.bsc;
-        base.bdc = p.bdc;
-        base.bsa = p.bsa || '100';
-        base.dnet = p.dnet || 'matic_mainnet';
-        base.pm = p.pm || 'card';
+      if (tab === 'sell') {
+        baseParams.ssc = params.ssc;
+        baseParams.sdc = params.sdc;
+        baseParams.ssa = params.ssa || '100';
+        baseParams.snet = params.snet || 'matic_mainnet';
       } else {
-        base.ssc = p.ssc;
-        base.sdc = p.sdc;
-        base.ssa = p.ssa || '100';
-        base.snet = p.snet || 'matic_mainnet';
+        baseParams.bsc = params.bsc;
+        baseParams.bdc = params.bdc;
+        baseParams.bsa = params.bsa || '100';
+        baseParams.dnet = params.dnet || 'matic_mainnet';
+        baseParams.pm = params.pm || 'card';
       }
 
-      const s = new URLSearchParams(base);
-      return `https://widget.mtpelerin.com/?${s.toString()}`;
+      Object.keys(baseParams).forEach(key => {
+        if (baseParams[key] === '') delete baseParams[key];
+      });
+
+      return `https://widget.mtpelerin.com/?${new URLSearchParams(baseParams).toString()}`;
     }
 
-    (function init() {
-      const p = qs();
-      const tab = pickTab(p.tab);
-      const valid = tab && validParams(p, tab);
+    function initializeApp() {
+      const result = parseUrlParameters();
+      if (!result.valid) return;
 
-      if (!valid) {
-        document.getElementById('errorPanel').classList.add('visible');
-        document.getElementById('indicator').textContent = '❌ Paramètres invalides';
-        return;
-      }
+      const url = formatWidgetUrl(result.params, result.tab);
+      document.getElementById('widget').src = url;
+    }
 
-      updateBadge(tab, p);
-      const url = buildUrl(p, tab);
-      const iframe = document.getElementById('widget');
-      iframe.src = url;
-      document.getElementById('widgetBox').classList.add('visible');
-    })();
+    document.addEventListener('DOMContentLoaded', initializeApp);
   </script>
 </body>
 </html>
