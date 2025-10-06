@@ -74,6 +74,11 @@
             font-family: 'Courier New', monospace; font-size: 0.85rem; color: #391659; word-break: break-all;
             border: 1px solid rgba(153, 113, 190, 0.3);
         }
+        
+        .param-info {
+            background: rgba(255, 255, 255, 0.8); padding: 15px; border-radius: 10px; margin-top: 15px;
+            font-size: 0.8rem; color: #391659;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +92,18 @@
         <div class="error-message" id="errorMessage">
             <h2>🔧 Configuration Requise</h2>
             <p>Paramètres manquants dans l'URL.</p>
-            <div class="url-example">?type=sell&crypto=USDT&fiat=EUR&amount=100</div>
+            <div class="url-example">
+                <strong>Exemple VENTE:</strong><br>
+                ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=matic_mainnet<br><br>
+                <strong>Exemple ACHAT:</strong><br>
+                ?tab=buy&bsc=EUR&bdc=BTC&bsa=500&dnet=bitcoin_mainnet<br><br>
+                <strong>Exemple SWAP:</strong><br>
+                ?tab=swap&ssc=ETH&sdc=USDT&ssa=1&snet=mainnet
+            </div>
+            <div class="param-info">
+                <strong>Paramètres disponibles:</strong><br>
+                tab, ssc, sdc, ssa, snet, bsc, bdc, bsa, dnet, addr, code, hash, curs, crys
+            </div>
         </div>
 
         <div class="loading" id="loadingMessage" style="display: none;">
@@ -109,23 +125,9 @@
         };
 
         const BRANDING = {
-            // Couleurs principales
             primary: '%23F88809',    // Orange pour les boutons principaux
-            success: '%2300AA55',    // Vert pour les succès
-            background: '%23FFFFFF', // Fond blanc
-            onPrimary: '%23FFFFFF',  // Texte sur boutons orange
-            onBackground: '%23391659', // Texte principal violet foncé
-            surface: '%23F5F5F5',    // Surface des cartes
-            onSurface: '%23391659',  // Texte sur surfaces
-            error: '%23FF0000',      // Rouge pour les erreurs
-            
-            // Logo
-            mylogo: 'https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/favicon.png',
-            
-            // Paramètres additionnels pour la visibilité
-            addr: '%23391659',       // Couleur des adresses
-            code: '%239971BE',       // Couleur des codes
-            hash: '%23F88809'        // Couleur des hash
+            success: '%239971BE',    // Violet pour les succès
+            mylogo: 'https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/favicon.png'
         };
 
         function parseUrlParameters() {
@@ -136,30 +138,56 @@
                 params[key] = value;
             }
             
-            const requiredParams = ['type', 'crypto', 'fiat'];
+            // Paramètres requis selon le tab
+            const tab = params.tab || 'sell';
+            let requiredParams = [];
+            
+            if (tab === 'sell') {
+                requiredParams = ['ssc', 'sdc']; // Source crypto, destination fiat
+            } else if (tab === 'buy') {
+                requiredParams = ['bsc', 'bdc']; // Source fiat, destination crypto
+            } else if (tab === 'swap') {
+                requiredParams = ['ssc', 'sdc']; // Source crypto, destination crypto
+            }
+            
             const missingParams = requiredParams.filter(param => !params[param]);
             
             if (missingParams.length > 0) {
-                return { valid: false, missing: missingParams, params };
+                return { valid: false, missing: missingParams, params, tab };
             }
             
-            return { valid: true, params };
+            return { valid: true, params, tab };
         }
 
         function formatWidgetUrl(params) {
             const baseParams = {
                 '_ctkn': CONFIG.API_TOKEN,
-                'tab': params.type,
-                'tabs': params.type,
+                'tab': params.tab || 'sell',
                 'lang': params.lang || 'fr',
-                'ssc': params.crypto,
-                'sdc': params.fiat,
-                'ssa': params.amount || '100',
-                'snet': params.network || 'matic_mainnet',
-                'net': params.network || 'matic_mainnet'
+                // Paramètres SELL (Off-ramp)
+                'ssc': params.ssc || 'USDT',      // Source currency (crypto)
+                'sdc': params.sdc || 'EUR',       // Destination currency (fiat)
+                'ssa': params.ssa || '100',       // Source amount
+                'snet': params.snet || 'matic_mainnet', // Source network
+                // Paramètres BUY (On-ramp)
+                'bsc': params.bsc || 'EUR',       // Source currency (fiat)
+                'bdc': params.bdc || 'USDT',      // Destination currency (crypto)
+                'bsa': params.bsa || '100',       // Source amount
+                'dnet': params.dnet || 'matic_mainnet', // Destination network
+                // Filtres
+                'curs': params.curs || 'EUR,USD,CHF', // Fiat autorisés
+                'crys': params.crys || 'USDT,BTC,ETH,MATIC', // Cryptos autorisées
+                // Autres paramètres
+                'addr': params.addr || '',        // Adresse de destination
+                'code': params.code || '',        // Code promo
+                'hash': params.hash || ''         // Hash de référence
             };
 
-            // Ajouter TOUS les paramètres de branding
+            // Supprimer les paramètres vides
+            Object.keys(baseParams).forEach(key => {
+                if (baseParams[key] === '') delete baseParams[key];
+            });
+
             const allParams = { ...baseParams, ...BRANDING };
             const urlParams = new URLSearchParams(allParams);
 
@@ -278,15 +306,13 @@
             const widgetUrl = formatWidgetUrl(params);
             const iframe = document.getElementById('widget');
             
-            console.log('🚀 Chargement widget avec branding complet:', widgetUrl);
+            console.log('🚀 Chargement widget avec URL:', widgetUrl);
 
             iframe.onload = () => {
-                console.log('✅ Widget Mt Pelerin chargé avec branding Akuunda Pay');
                 updateUI('loaded');
             };
 
             iframe.onerror = () => {
-                console.log('❌ Erreur chargement widget');
                 updateUI('error');
             };
 
