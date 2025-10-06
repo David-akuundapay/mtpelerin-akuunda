@@ -2,179 +2,120 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Akuunda Pay - Exchange</title>
+  <title>Akuunda Pay – Exchange</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="referrer" content="no-referrer-when-downgrade" />
   <style>
-    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0720 url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg') center/cover fixed no-repeat;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .wrap{width:100%;max-width:520px}
-    .card{background:rgba(255,255,255,.96);border-radius:18px;border:2px solid rgba(153,113,190,.25);box-shadow:0 20px 50px rgba(26,16,59,.35);padding:20px}
-    h1{margin:0 0 6px;background:linear-gradient(135deg,#fff, #F88809);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .subtitle{margin:0 0 14px;color:#5a3a86}
-    .badge{background:#391659;color:#fff;font-weight:700;border-radius:10px;padding:10px 14px;text-align:center;margin:10px 0}
-    .muted{color:#7c5aa6}
-    .examples{font-family:ui-monospace,Menlo,Consolas,monospace;background:#f6f3fb;border:1px solid #e5dbff;padding:10px;border-radius:10px;word-break:break-all}
-    iframe{width:100%;height:680px;border:none;border-radius:16px;box-shadow:0 22px 44px rgba(26,16,59,.35);border:3px solid #9971BE}
+    html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f6f7fb}
+    .wrap{max-width:520px;margin:0 auto;padding:20px}
+    .badge{background:#391659;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;text-align:center;margin:10px 0}
+    .note{font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#fff;border:1px solid #e5e6eb;border-radius:10px;padding:10px}
+    iframe{width:100%;height:680px;border:none;border-radius:16px;box-shadow:0 18px 44px rgba(26,16,59,.18)}
     .hidden{display:none}
-    .foot{margin-top:10px;text-align:center;font-weight:600;background:linear-gradient(135deg,#fff,#F88809);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>Akuunda Pay</h1>
-      <p class="subtitle">Échange crypto sécurisé</p>
+    <div id="indicator" class="badge">Chargement…</div>
 
-      <div id="indicator" class="badge">🔄 Chargement…</div>
+    <div id="err" class="note hidden">
+      <b>Missing/invalid query params.</b><br><br>
+      <b>SELL</b>: <code>?tab=sell&ssc=USDT&sdc=EUR&ssa=100&net=matic_mainnet&snet=matic_mainnet</code><br>
+      <b>BUY</b>: <code>?tab=buy&bsc=EUR&bdc=USDT&bsa=100&net=matic_mainnet&dnet=matic_mainnet&pm=card</code>
+    </div>
 
-      <div id="panelError" class="">
-        <p class="muted">Paramètres manquants ou invalides dans l’URL.</p>
-        <div class="examples">
-          <strong>SELL (crypto → EUR) :</strong><br>
-          <code>?tab=sell&ssc=USDC&sdc=EUR&ssa=125.5&net=matic_mainnet&snet=matic_mainnet</code>
-          <br><br>
-          <strong>BUY (EUR → crypto) :</strong><br>
-          <code>?tab=buy&bsc=EUR&bdc=USDC&bsa=125.5&net=matic_mainnet&dnet=matic_mainnet&pm=card</code>
-        </div>
-      </div>
-
-      <div id="panelLoading" class="hidden">
-        <p class="muted">Initialisation du widget…</p>
-      </div>
-
-      <div id="panelWidget" class="hidden">
-        <iframe id="widget" allow="payment; clipboard-write; ethereum; usb" title="Akuunda Pay Widget"></iframe>
-      </div>
-
-      <div class="foot">💳 Service par Akuunda Pay</div>
+    <div id="box" class="hidden">
+      <iframe id="w" allow="payment; clipboard-write; ethereum"></iframe>
     </div>
   </div>
 
   <script>
-    // ===== Config =====
-    const CONFIG = {
-      TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
-    };
+    // ---- Basic helpers
+    const $ = id => document.getElementById(id);
+    const show = id => $(id).classList.remove('hidden');
+    const hide = id => $(id).classList.add('hidden');
 
-    // Couleurs (versions avec et sans # pour compatibilité)
-    const ORANGE_HEX = 'F88809';
-    const ORANGE_HEX_HASH = '%23F88809'; // encodé pour l’URL
-    const WHITE_HEX = 'FFFFFF';
-    const WHITE_HEX_HASH = '%23FFFFFF';
-    const BG_HEX = 'F8F9FA';
-
-    // ===== Helpers =====
-    const $ = (id) => document.getElementById(id);
-    const show = (id) => $(id).classList.remove('hidden');
-    const hide = (id) => $(id).classList.add('hidden');
-
-    function getParams(){
-      const p = {}; const q = new URLSearchParams(location.search);
-      for(const [k,v] of q.entries()) p[k]=v;
-      return p;
+    function qp() {
+      const out = {}; const s = new URLSearchParams(location.search);
+      for (const [k, v] of s.entries()) out[k] = v;
+      return out;
     }
+    const pickTab = t => (t||'').toLowerCase()==='buy' ? 'buy' : (t||'').toLowerCase()==='sell' ? 'sell' : null;
 
-    function pickTab(raw){
-      const v = (raw||'').toLowerCase();
-      if (v === 'buy' || v === 'sell') return v;
-      return null;
-    }
+    // ---- Build widget URL (ONLY the chosen service)
+    function buildUrl(p) {
+      const ORANGE = 'F88809', WHITE = 'FFFFFF', BG = 'F8F9FA';
+      const tab = pickTab(p.tab || p.type || p.tabs) || 'buy';
 
-    function needKeys(tab){
-      return tab === 'sell' ? ['ssc','sdc'] : ['bsc','bdc'];
-    }
-
-    function hasRequired(params, tab){
-      return needKeys(tab).every(k => params[k] && String(params[k]).trim() !== '');
-    }
-
-    // Construit une URL MtPelerin qui n’affiche QUE l’onglet choisi
-    function buildWidgetUrl(params){
-      const tab = pickTab(params.tab || params.type || params.tabs) || 'buy';
-
-      // base strict : forcer un seul onglet visible et actif
       const base = {
-        _ctkn: CONFIG.TOKEN,
-        tab,               // onglet actif
-        tabs: tab,         // n’affiche que cet onglet
-        lang: (params.lang || 'auto'),
-        // Couleurs (on passe plusieurs clés pour maximiser la prise en compte côté widget)
-        primaryColor: ORANGE_HEX,
-        primaryTextColor: WHITE_HEX,
-        secondaryColor: ORANGE_HEX,
-        background: BG_HEX,
-        successColor: ORANGE_HEX,
-        warningColor: ORANGE_HEX,
-        infoColor: ORANGE_HEX,
-        // variantes encodées (#) au cas où le widget l’exige
-        primaryColorHex: ORANGE_HEX_HASH,
-        primaryTextColorHex: WHITE_HEX_HASH,
-        accentColor: ORANGE_HEX,       // alias possibles
-        accentColorHex: ORANGE_HEX_HASH,
-        // réseau commun
-        net: params.net || 'matic_mainnet',
-        addr: params.addr || '',
-        code: params.code || '',
-        hash: params.hash || ''
+        _ctkn: '1c7a15d7-7243-4a77-a04e-c2b74061fa88',
+        tab,               // active tab
+        tabs: tab,         // show ONLY this tab
+        hideTabs: 'true',
+        display: 'direct',
+        lang: p.lang || 'auto',
+        // theming (multiple aliases to maximize compatibility)
+        primaryColor: ORANGE,
+        primaryTextColor: WHITE,
+        secondaryColor: ORANGE,
+        background: BG,
+        successColor: ORANGE,
+        warningColor: ORANGE,
+        infoColor: ORANGE,
+        accentColor: ORANGE,
+        // common
+        net: p.net || 'matic_mainnet',
+        addr: p.addr || '',
+        code: p.code || '',
+        hash: p.hash || ''
       };
 
-      if (tab === 'sell'){
-        base.ssc  = params.ssc  || 'USDC';
-        base.sdc  = params.sdc  || 'EUR';
-        base.ssa  = params.ssa  || '100';
-        base.snet = params.snet || 'matic_mainnet';
-        // purge des clés BUY
-        delete base.bsc; delete base.bdc; delete base.bsa; delete base.dnet; delete base.pm;
+      if (tab === 'sell') {
+        base.ssc  = p.ssc  || 'USDT';
+        base.sdc  = p.sdc  || 'EUR';
+        base.ssa  = p.ssa  || '100';
+        base.snet = p.snet || 'matic_mainnet';
       } else {
-        base.bsc  = params.bsc  || 'EUR';
-        base.bdc  = params.bdc  || 'USDC';
-        base.bsa  = params.bsa  || '100';
-        base.dnet = params.dnet || 'matic_mainnet';
-        base.pm   = params.pm   || 'card';
-        // purge des clés SELL
-        delete base.ssc; delete base.sdc; delete base.ssa; delete base.snet;
+        base.bsc  = p.bsc  || 'EUR';
+        base.bdc  = p.bdc  || 'USDT';
+        base.bsa  = p.bsa  || '100';
+        base.dnet = p.dnet || 'matic_mainnet';
+        base.pm   = p.pm   || 'card';
       }
 
-      // Nettoyage des vides
       Object.keys(base).forEach(k => { if (base[k] === '') delete base[k]; });
-
-      const q = new URLSearchParams(base);
-      return `https://widget.mtpelerin.com/?${q.toString()}`;
+      const qs = new URLSearchParams(base).toString();
+      return `https://widget.mtpelerin.com/?${qs}`;
     }
 
-    function updateIndicator(tab, p){
-      if (tab === 'sell'){
-        const from = p.ssc || 'USDC', to = p.sdc || 'EUR', amt = p.ssa ? ` | Montant: ${p.ssa} ${from}` : '';
-        $('indicator').textContent = `💰 SELL : ${from} → ${to}${amt}`;
+    function updateBadge(tab, p) {
+      if (tab === 'sell') {
+        const from = p.ssc || 'USDT', to = p.sdc || 'EUR', a = p.ssa ? ` | Montant: ${p.ssa} ${from}` : '';
+        $('indicator').textContent = `SELL : ${from} → ${to}${a}`;
       } else {
-        const from = p.bsc || 'EUR', to = p.bdc || 'USDC', amt = p.bsa ? ` | Montant: ${p.bsa} ${from}` : '';
-        $('indicator').textContent = `💳 BUY : ${from} → ${to}${amt}`;
+        const from = p.bsc || 'EUR', to = p.bdc || 'USDT', a = p.bsa ? ` | Montant: ${p.bsa} ${from}` : '';
+        $('indicator').textContent = `BUY : ${from} → ${to}${a}`;
       }
     }
 
-    // ===== Init =====
-    (function(){
-      const p = getParams();
+    // ---- Init
+    (function init(){
+      const p = qp();
       const tab = pickTab(p.tab || p.type || p.tabs);
+      const need = tab === 'sell' ? ['ssc','sdc'] : ['bsc','bdc'];
 
-      if (!tab || !hasRequired(p, tab)){
-        // erreur (tab absent/invalid OU clés minimales manquantes)
-        show('panelError'); hide('panelLoading'); hide('panelWidget');
+      if (!tab || need.some(k => !p[k])) {
+        show('err'); hide('box');
         $('indicator').textContent = '⚠️ Paramètres requis manquants';
         return;
       }
 
-      // ok → charge widget
-      hide('panelError'); show('panelLoading'); hide('panelWidget');
-      updateIndicator(tab, p);
+      updateBadge(tab, p);
+      const url = buildUrl(p);
+      const iframe = $('w');
 
-      const url = buildWidgetUrl(p);
-      const iframe = $('widget');
-
-      iframe.onload  = () => { hide('panelLoading'); show('panelWidget'); };
-      iframe.onerror = () => { hide('panelLoading'); show('panelError'); $('indicator').textContent = '❌ Échec de chargement du widget'; };
-
-      // Sécurité: neutraliser tout résidu d’autre onglet dans l’URL finale
+      hide('err'); show('box');
+      iframe.onload = () => { /* loaded */ };
+      iframe.onerror = () => { show('err'); $('indicator').textContent = '❌ Échec de chargement'; };
       iframe.src = url;
     })();
   </script>
