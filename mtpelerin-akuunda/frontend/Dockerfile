@@ -13,7 +13,7 @@ RUN mkdir -p /usr/share/nginx/html &&     cat > /usr/share/nginx/html/index.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer-when-downgrade">
     
-    <link rel="icon" href="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/favicon.png" type="image/png">
+    <link rel="icon" href="https://github.com/David-akuundapay/mtpelerin-akuunda/blob/main/mtpelerin-akuunda/images/favicon.png" type="image/png">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,7 +21,7 @@ RUN mkdir -p /usr/share/nginx/html &&     cat > /usr/share/nginx/html/index.html
         body { 
             margin: 0; padding: 0; 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/business-card-front.png') no-repeat center center fixed;
+            background: url('https://github.com/David-akuundapay/mtpelerin-akuunda/blob/main/mtpelerin-akuunda/images/business-card-front.png') no-repeat center center fixed;
             background-size: cover;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
@@ -80,7 +80,7 @@ RUN mkdir -p /usr/share/nginx/html &&     cat > /usr/share/nginx/html/index.html
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/brand-hero.jpg" alt="Akuunda Pay" class="hero-image">
+            <img src="https://github.com/David-akuundapay/mtpelerin-akuunda/blob/main/mtpelerin-akuunda/images/brand-hero.jpg" alt="Akuunda Pay" class="hero-image">
             <h1>Akuunda Pay</h1>
             <p>Échange Crypto Sécurisé</p>
         </div>
@@ -112,7 +112,7 @@ RUN mkdir -p /usr/share/nginx/html &&     cat > /usr/share/nginx/html/index.html
         const BRANDING = {
             primary: '%239971BE',
             success: '%23F88809',
-            mylogo: 'https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/favicon.png'
+            mylogo: 'https://github.com/David-akuundapay/mtpelerin-akuunda/blob/main/mtpelerin-akuunda/images/favicon.png'
         };
 
         function parseUrlParameters() {
