@@ -1,0 +1,299 @@
+FROM nginx:alpine
+
+RUN apk add --no-cache wget
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+RUN mkdir -p /usr/share/nginx/html &&     cat > /usr/share/nginx/html/index.html << 'HTML'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Akuunda Pay - Crypto Exchange</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <link rel="icon" href="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/favicon.png" type="image/png">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            margin: 0; padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/business-card-front.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container { width: 100%; max-width: 420px; margin: 20px; }
+        
+        .header { text-align: center; margin-bottom: 30px; }
+        
+        .hero-image {
+            width: 140px; height: 140px; border-radius: 50%; object-fit: cover;
+            border: 5px solid #FFFFFF; box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
+            margin: 0 auto 20px auto; display: block;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem; color: #FFFFFF; margin-bottom: 8px;
+            text-shadow: 2px 2px 8px rgba(57, 22, 89, 0.8); font-weight: 700;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        
+        .header p { color: #FFFFFF; font-size: 1.1rem; text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500; }
+        
+        .widget-container { display: none; }
+        
+        .error-message, .loading {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
+            text-align: center; padding: 40px 30px; color: #391659; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(57, 22, 89, 0.3); border: 2px solid rgba(153, 113, 190, 0.3);
+        }
+        
+        .error-message h2, .loading h2 { color: #391659; margin-bottom: 15px; font-size: 1.6rem; font-weight: 700; }
+        
+        .error-message p, .loading p { color: #9971BE; line-height: 1.5; }
+        
+        iframe {
+            width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
+            box-shadow: 0 25px 50px rgba(57, 22, 89, 0.4); border: 3px solid #9971BE;
+        }
+        
+        .akuunda-footer {
+            text-align: center; margin-top: 25px; color: #FFFFFF; font-size: 1rem;
+            text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        
+        .url-example {
+            background: rgba(57, 22, 89, 0.1); padding: 12px; border-radius: 10px; margin-top: 20px;
+            font-family: 'Courier New', monospace; font-size: 0.85rem; color: #391659; word-break: break-all;
+            border: 1px solid rgba(153, 113, 190, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/brand-hero.jpg" alt="Akuunda Pay" class="hero-image">
+            <h1>Akuunda Pay</h1>
+            <p>Échange Crypto Sécurisé</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <h2>🔧 Configuration Requise</h2>
+            <p>Paramètres manquants dans l'URL.</p>
+            <div class="url-example">?type=sell&crypto=USDT&fiat=EUR&amount=100</div>
+        </div>
+
+        <div class="loading" id="loadingMessage" style="display: none;">
+            <h2>⏳ Chargement...</h2>
+            <p>Initialisation de la plateforme Akuunda Pay</p>
+        </div>
+
+        <div class="widget-container" id="widgetContainer">
+            <iframe id="widget" allow="usb; ethereum; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Exchange Platform"></iframe>
+        </div>
+        
+        <div class="akuunda-footer">💳 Service sécurisé par Akuunda Pay</div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            BACKEND_URL: 'https://mtpay.akuunda-pay.io/api/mtpelerin',
+            API_TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
+        };
+
+        const BRANDING = {
+            primary: '%239971BE',
+            success: '%23F88809',
+            mylogo: 'https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/images/favicon.png'
+        };
+
+        function parseUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = {};
+            
+            for (const [key, value] of urlParams.entries()) {
+                params[key] = value;
+            }
+            
+            const requiredParams = ['type', 'crypto', 'fiat'];
+            const missingParams = requiredParams.filter(param => !params[param]);
+            
+            if (missingParams.length > 0) {
+                return { valid: false, missing: missingParams, params };
+            }
+            
+            return { valid: true, params };
+        }
+
+        function formatWidgetUrl(params) {
+            const baseParams = {
+                '_ctkn': CONFIG.API_TOKEN,
+                'tab': params.type,
+                'tabs': params.type,
+                'lang': params.lang || 'fr',
+                'ssc': params.crypto,
+                'sdc': params.fiat,
+                'ssa': params.amount || '100',
+                'snet': params.network || 'matic_mainnet',
+                'net': params.network || 'matic_mainnet'
+            };
+
+            const allParams = { ...baseParams, ...BRANDING };
+            const urlParams = new URLSearchParams(allParams);
+
+            return `https://widget.mtpelerin.com/?${urlParams.toString()}`;
+        }
+
+        function setupWidgetEventListener() {
+            window.addEventListener('message', (event) => {
+                if (!event.origin.includes('mtpelerin.com')) return;
+                
+                try {
+                    const message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                    if (!message?.type) return;
+
+                    console.log('📨 Événement:', message.type);
+
+                    switch(message.type) {
+                        case 'orderCreated':
+                            handleOrderCreated(message.data);
+                            break;
+                        case 'paymentSubmitted':
+                            handlePaymentSubmitted(message.data);
+                            break;
+                        case 'orderCompleted':
+                            handleOrderCompleted(message.data);
+                            break;
+                        case 'orderFailed':
+                            handleOrderFailed(message.data);
+                            break;
+                    }
+                } catch (error) {}
+            });
+        }
+
+        async function handleOrderCreated(order) {
+            if (!order?.id) return;
+            
+            const criticalData = {
+                orderId: order.id,
+                orderType: order.type,
+                currencyIn: order.currencyIn,
+                currencyOut: order.currencyOut,
+                amountIn: order.valueIn,
+                amountOut: order.valueOut,
+                depositAddress: order.cryptoAddress || order.offRampAddress,
+                network: order.network,
+                timestamp: new Date().toISOString(),
+                source: 'akuunda_pay_widget'
+            };
+
+            await sendToBackend('order/created', criticalData);
+        }
+
+        async function handlePaymentSubmitted(payment) {
+            const paymentData = {
+                orderId: payment.orderId,
+                paymentType: payment.paymentType,
+                transactionHash: payment.transactionHash,
+                timestamp: new Date().toISOString()
+            };
+
+            await sendToBackend('payment/submitted', paymentData);
+        }
+
+        async function handleOrderCompleted(order) {
+            const completionData = {
+                orderId: order.id,
+                status: 'completed',
+                finalAmount: order.finalAmount,
+                timestamp: new Date().toISOString()
+            };
+
+            await sendToBackend('order/completed', completionData);
+        }
+
+        async function handleOrderFailed(order) {
+            const failureData = {
+                orderId: order.id,
+                status: 'failed',
+                error: order.error,
+                timestamp: new Date().toISOString()
+            };
+
+            await sendToBackend('order/failed', failureData);
+        }
+
+        async function sendToBackend(endpoint, data) {
+            try {
+                const response = await fetch(`${CONFIG.BACKEND_URL}/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    console.log(`✅ Backend ${endpoint}: Succès`);
+                }
+            } catch (error) {
+                console.log(`📦 ${endpoint}: Sauvegarde locale`);
+            }
+        }
+
+        function updateUI(state) {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('widgetContainer').style.display = 'none';
+            
+            if (state === 'error') document.getElementById('errorMessage').style.display = 'block';
+            if (state === 'loading') document.getElementById('loadingMessage').style.display = 'block';
+            if (state === 'loaded') document.getElementById('widgetContainer').style.display = 'block';
+        }
+
+        function loadWidget(params) {
+            updateUI('loading');
+            
+            const widgetUrl = formatWidgetUrl(params);
+            const iframe = document.getElementById('widget');
+            
+            iframe.onload = () => {
+                updateUI('loaded');
+            };
+
+            iframe.onerror = () => {
+                updateUI('error');
+            };
+
+            iframe.src = widgetUrl;
+        }
+
+        function initializeApp() {
+            setupWidgetEventListener();
+            
+            const urlCheck = parseUrlParameters();
+            
+            if (!urlCheck.valid) {
+                updateUI('error');
+                return;
+            }
+            
+            loadWidget(urlCheck.params);
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
+HTML
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
