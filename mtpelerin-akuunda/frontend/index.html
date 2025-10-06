@@ -22,7 +22,19 @@
         
         .container { width: 100%; max-width: 450px; margin: 20px; }
         
-        .header { text-align: center; margin-bottom: 30px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        
+        .service-indicator {
+            background: rgba(57, 22, 89, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(57, 22, 89, 0.3);
+        }
         
         .hero-image {
             width: 400px; 
@@ -30,7 +42,7 @@
             border-radius: 15px; 
             object-fit: contain;
             border: 5px solid #FFFFFF; 
-            box-shadow: 0 10px 30px rgba(255, 102, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
             margin: 0 auto 25px auto; 
             display: block;
             max-width: 95%;
@@ -38,46 +50,46 @@
         
         .header h1 {
             font-size: 2.4rem; color: #FFFFFF; margin-bottom: 8px;
-            text-shadow: 2px 2px 8px rgba(255, 102, 0, 0.8); font-weight: 700;
-            background: linear-gradient(135deg, #FFFFFF 0%, #FF6600 100%);
+            text-shadow: 2px 2px 8px rgba(57, 22, 89, 0.8); font-weight: 700;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         
-        .header p { color: #FFFFFF; font-size: 1.2rem; text-shadow: 1px 1px 4px rgba(255, 102, 0, 0.6); font-weight: 500; }
+        .header p { color: #FFFFFF; font-size: 1.2rem; text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500; }
         
         .widget-container { display: none; }
         
         .error-message, .loading {
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
-            text-align: center; padding: 40px 30px; color: #FF6600; border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(255, 102, 0, 0.3); border: 2px solid rgba(255, 102, 0, 0.3);
+            text-align: center; padding: 40px 30px; color: #391659; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(57, 22, 89, 0.3); border: 2px solid rgba(153, 113, 190, 0.3);
         }
         
-        .error-message h2, .loading h2 { color: #FF6600; margin-bottom: 15px; font-size: 1.6rem; font-weight: 700; }
+        .error-message h2, .loading h2 { color: #391659; margin-bottom: 15px; font-size: 1.6rem; font-weight: 700; }
         
-        .error-message p, .loading p { color: #FF8C00; line-height: 1.5; }
+        .error-message p, .loading p { color: #9971BE; line-height: 1.5; }
         
         iframe {
             width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
-            box-shadow: 0 25px 50px rgba(255, 102, 0, 0.4); border: 3px solid #FF6600;
+            box-shadow: 0 25px 50px rgba(57, 22, 89, 0.4); border: 3px solid #9971BE;
         }
         
         .akuunda-footer {
             text-align: center; margin-top: 25px; color: #FFFFFF; font-size: 1rem;
-            text-shadow: 1px 1px 4px rgba(255, 102, 0, 0.6); font-weight: 500;
-            background: linear-gradient(135deg, #FFFFFF 0%, #FF6600 100%);
+            text-shadow: 1px 1px 4px rgba(57, 22, 89, 0.6); font-weight: 500;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         
         .url-example {
-            background: rgba(255, 102, 0, 0.1); padding: 12px; border-radius: 10px; margin-top: 20px;
-            font-family: 'Courier New', monospace; font-size: 0.85rem; color: #FF6600; word-break: break-all;
-            border: 1px solid rgba(255, 140, 0, 0.3);
+            background: rgba(57, 22, 89, 0.1); padding: 12px; border-radius: 10px; margin-top: 20px;
+            font-family: 'Courier New', monospace; font-size: 0.85rem; color: #391659; word-break: break-all;
+            border: 1px solid rgba(153, 113, 190, 0.3);
         }
         
         .param-info {
             background: rgba(255, 255, 255, 0.8); padding: 15px; border-radius: 10px; margin-top: 15px;
-            font-size: 0.8rem; color: #FF6600;
+            font-size: 0.8rem; color: #391659;
         }
     </style>
 </head>
@@ -89,18 +101,22 @@
             <p>Échange Crypto Sécurisé</p>
         </div>
 
+        <div class="service-indicator" id="serviceIndicator">
+            🔄 Chargement du service...
+        </div>
+
         <div class="error-message" id="errorMessage">
             <h2>🔧 Configuration Requise</h2>
             <p>Paramètres manquants dans l'URL.</p>
             <div class="url-example">
                 <strong>Exemple VENTE:</strong><br>
-                ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=bsc_mainnet<br><br>
+                ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=bsc_mainnet&code=CODE123&hash=HASH456<br><br>
                 <strong>Exemple ACHAT:</strong><br>
-                ?tab=buy&bsc=EUR&bdc=USDT&bsa=500&dnet=bsc_mainnet
+                ?tab=buy&bsc=EUR&bdc=USDT&bsa=500&dnet=bsc_mainnet&code=CODE123&hash=HASH456
             </div>
             <div class="param-info">
                 <strong>Paramètres disponibles:</strong><br>
-                tab, ssc, sdc, ssa, snet, bsc, bdc, bsa, dnet, addr, curs, crys
+                tab, ssc, sdc, ssa, snet, bsc, bdc, bsa, dnet, addr, code, hash, curs, crys
             </div>
         </div>
 
@@ -123,10 +139,13 @@
         };
 
         const BRANDING = {
-            primaryColor: 'FF6600',          // Orange principal Akuunda
-            primaryTextColor: 'FFFFFF',      // Texte blanc sur boutons orange
-            secondaryColor: 'FF8C00',        // Orange secondaire
-            background: 'F8F9FA',            // Fond clair
+            primaryColor: 'F88809',           // Orange Akuunda pour boutons principaux
+            primaryTextColor: 'FFFFFF',       // Texte blanc sur boutons orange
+            secondaryColor: 'FFA500',         // Orange secondaire
+            background: 'F8F9FA',             // Fond clair
+            successColor: 'F88809',           // Orange pour succès (pas de vert)
+            warningColor: 'FF8C00',           // Orange pour avertissements
+            infoColor: 'F88809',              // Orange pour infos
             lang: 'fr',
             hideNetworkSwitch: 'true'
         };
@@ -139,7 +158,7 @@
                 params[key] = value;
             }
             
-            // Seulement Buy et Sell sont autorisés
+            // Seulement Buy et Sell sont autorisés - pas de Swap
             const tab = params.tab || 'sell';
             if (tab === 'swap') {
                 params.tab = 'sell'; // Forcer sell si swap est détecté
@@ -162,6 +181,29 @@
             return { valid: true, params, tab };
         }
 
+        function updateServiceIndicator(params) {
+            const indicator = document.getElementById('serviceIndicator');
+            const tab = params.tab || 'sell';
+            
+            let serviceText = '';
+            let serviceIcon = '';
+            
+            if (tab === 'sell') {
+                serviceIcon = '💰';
+                serviceText = `VENTE - ${params.ssc || 'USDT'} → ${params.sdc || 'EUR'}`;
+            } else if (tab === 'buy') {
+                serviceIcon = '💳';
+                serviceText = `ACHAT - ${params.bsc || 'EUR'} → ${params.bdc || 'USDT'}`;
+            }
+            
+            if (params.ssa || params.bsa) {
+                const amount = params.ssa || params.bsa;
+                serviceText += ` | Montant: ${amount} ${tab === 'sell' ? params.ssc : params.bsc}`;
+            }
+            
+            indicator.innerHTML = `${serviceIcon} ${serviceText}`;
+        }
+
         function formatWidgetUrl(params) {
             const baseParams = {
                 '_ctkn': CONFIG.API_TOKEN,
@@ -180,19 +222,24 @@
                 // Filtres
                 'curs': params.curs || 'EUR,USD,XOF', // Fiat autorisés
                 'crys': params.crys || 'USDT,USDC,BTC,ETH', // Cryptos autorisées
-                // Branding Akuunda
+                // Branding Akuunda - TOUT EN ORANGE pour les boutons
                 'primaryColor': BRANDING.primaryColor,
                 'primaryTextColor': BRANDING.primaryTextColor,
                 'secondaryColor': BRANDING.secondaryColor,
                 'background': BRANDING.background,
+                'successColor': BRANDING.successColor,
+                'warningColor': BRANDING.warningColor,
+                'infoColor': BRANDING.infoColor,
                 'hideNetworkSwitch': BRANDING.hideNetworkSwitch,
-                // Autres paramètres
-                'addr': params.addr || ''         // Adresse de destination
+                // Autres paramètres (conservés)
+                'addr': params.addr || '',        // Adresse de destination
+                'code': params.code || '',        // Code promo
+                'hash': params.hash || ''         // Hash de référence
             };
 
-            // Nettoyer les paramètres vides ou non désirés
+            // Nettoyer seulement les paramètres vides
             Object.keys(baseParams).forEach(key => {
-                if (baseParams[key] === '' || key === 'code' || key === 'hash' || key === 'crypto') {
+                if (baseParams[key] === '') {
                     delete baseParams[key];
                 }
             });
@@ -225,9 +272,30 @@
                         case 'orderFailed':
                             handleOrderFailed(message.data);
                             break;
+                        case 'tabChanged':
+                            updateTabIndicator(message.data);
+                            break;
                     }
                 } catch (error) {}
             });
+        }
+
+        function updateTabIndicator(tabData) {
+            const indicator = document.getElementById('serviceIndicator');
+            if (tabData?.tab) {
+                let serviceText = '';
+                let serviceIcon = '';
+                
+                if (tabData.tab === 'sell') {
+                    serviceIcon = '💰';
+                    serviceText = `VENTE - ${tabData.fromCurrency || 'Crypto'} → ${tabData.toCurrency || 'Fiat'}`;
+                } else if (tabData.tab === 'buy') {
+                    serviceIcon = '💳';
+                    serviceText = `ACHAT - ${tabData.fromCurrency || 'Fiat'} → ${tabData.toCurrency || 'Crypto'}`;
+                }
+                
+                indicator.innerHTML = `${serviceIcon} ${serviceText}`;
+            }
         }
 
         async function handleOrderCreated(order) {
@@ -302,14 +370,21 @@
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('widgetContainer').style.display = 'none';
+            document.getElementById('serviceIndicator').style.display = 'block';
             
-            if (state === 'error') document.getElementById('errorMessage').style.display = 'block';
+            if (state === 'error') {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('serviceIndicator').style.display = 'none';
+            }
             if (state === 'loading') document.getElementById('loadingMessage').style.display = 'block';
             if (state === 'loaded') document.getElementById('widgetContainer').style.display = 'block';
         }
 
         function loadWidget(params) {
             updateUI('loading');
+            
+            // Mettre à jour l'indicateur de service
+            updateServiceIndicator(params);
             
             const widgetUrl = formatWidgetUrl(params);
             const iframe = document.getElementById('widget');
