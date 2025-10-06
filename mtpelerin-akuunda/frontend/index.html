@@ -22,19 +22,7 @@
         
         .container { width: 100%; max-width: 450px; margin: 20px; }
         
-        .header { text-align: center; margin-bottom: 20px; }
-        
-        .service-indicator {
-            background: rgba(57, 22, 89, 0.9);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 12px rgba(57, 22, 89, 0.3);
-        }
+        .header { text-align: center; margin-bottom: 30px; }
         
         .hero-image {
             width: 400px; 
@@ -101,10 +89,6 @@
             <p>Échange Crypto Sécurisé</p>
         </div>
 
-        <div class="service-indicator" id="serviceIndicator">
-            🔄 Chargement du service...
-        </div>
-
         <div class="error-message" id="errorMessage">
             <h2>🔧 Configuration Requise</h2>
             <p>Paramètres manquants dans l'URL.</p>
@@ -138,7 +122,6 @@
             API_TOKEN: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
         };
 
-        // CORRECTION : Branding avec paramètres URL encoded comme dans la documentation
         const BRANDING = {
             mylogo: 'https%3A%2F%2Fraw.githubusercontent.com%2FDavid-akuundapay%2Fmtpelerin-akuunda%2Fmain%2Fmtpelerin-akuunda%2Fimages%2Ffavicon.png',
             primary: '%23F88809',    // Orange Akuunda URL encoded
@@ -183,42 +166,18 @@
             return { valid: true, params, tab };
         }
 
-        function updateServiceIndicator(params) {
-            const indicator = document.getElementById('serviceIndicator');
-            const tab = params.tab || params.type || params.tabs || 'sell';
-            
-            let serviceText = '';
-            let serviceIcon = '';
-            
-            if (tab === 'sell') {
-                serviceIcon = '💰 VENTE';
-                serviceText = `${params.ssc || 'USDT'} → ${params.sdc || 'EUR'}`;
-            } else if (tab === 'buy') {
-                serviceIcon = '💳 ACHAT';
-                serviceText = `${params.bsc || 'EUR'} → ${params.bdc || 'USDT'}`;
-            }
-            
-            if (params.ssa || params.bsa) {
-                const amount = params.ssa || params.bsa;
-                serviceText += ` | Montant: ${amount} ${tab === 'sell' ? params.ssc : params.bsc}`;
-            }
-            
-            indicator.innerHTML = `${serviceIcon} : ${serviceText}`;
-        }
-
         function formatWidgetUrl(params) {
             const tab = params.tab || params.type || params.tabs || 'sell';
             
-            // CORRECTION : Utiliser les paramètres de branding URL encoded exacts
             const baseParams = {
                 '_ctkn': CONFIG.API_TOKEN,
                 'tab': tab,
                 'lang': BRANDING.lang,
                 
-                // CORRECTION : Paramètres de branding URL encoded comme dans la doc
-                'mylogo': BRANDING.mylogo,    // Logo Akuunda URL encoded
-                'primary': BRANDING.primary,  // Couleur primaire orange URL encoded
-                'success': BRANDING.success,  // CTA orange URL encoded (pas de vert)
+                // Branding Akuunda avec paramètres URL encoded
+                'mylogo': BRANDING.mylogo,
+                'primary': BRANDING.primary,
+                'success': BRANDING.success,
                 
                 // Paramètres pour afficher uniquement le service sélectionné
                 'display': BRANDING.display,
@@ -233,7 +192,7 @@
                 'hash': params.hash || ''
             };
 
-            // CORRECTION : Forcer un seul service en supprimant les paramètres conflictuels
+            // Forcer un seul service en supprimant les paramètres conflictuels
             if (tab === 'sell') {
                 // Service VENTE uniquement
                 baseParams.ssc = params.ssc || 'USDT';
@@ -263,7 +222,7 @@
                 delete baseParams.snet;
             }
 
-            // CORRECTION : Nettoyer rigoureusement tous les paramètres vides
+            // Nettoyer les paramètres vides
             Object.keys(baseParams).forEach(key => {
                 if (baseParams[key] === '' || baseParams[key] === null || baseParams[key] === undefined) {
                     delete baseParams[key];
@@ -271,10 +230,7 @@
             });
 
             const urlParams = new URLSearchParams(baseParams);
-            const finalUrl = `https://widget.mtpelerin.com/?${urlParams.toString()}`;
-            
-            console.log('🚀 URL FINALE:', finalUrl);
-            return finalUrl;
+            return `https://widget.mtpelerin.com/?${urlParams.toString()}`;
         }
 
         function setupWidgetEventListener() {
@@ -284,8 +240,6 @@
                 try {
                     const message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
                     if (!message?.type) return;
-
-                    console.log('📨 Événement:', message.type);
 
                     switch(message.type) {
                         case 'orderCreated':
@@ -377,12 +331,8 @@
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('widgetContainer').style.display = 'none';
-            document.getElementById('serviceIndicator').style.display = 'block';
             
-            if (state === 'error') {
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('serviceIndicator').style.display = 'none';
-            }
+            if (state === 'error') document.getElementById('errorMessage').style.display = 'block';
             if (state === 'loading') document.getElementById('loadingMessage').style.display = 'block';
             if (state === 'loaded') document.getElementById('widgetContainer').style.display = 'block';
         }
@@ -390,23 +340,15 @@
         function loadWidget(params) {
             updateUI('loading');
             
-            // Mettre à jour l'indicateur de service
-            updateServiceIndicator(params);
-            
             const widgetUrl = formatWidgetUrl(params);
             const iframe = document.getElementById('widget');
-            
-            console.log('🚀 Chargement widget avec paramètres:', params);
-            console.log('🔗 URL générée:', widgetUrl);
 
             iframe.onload = () => {
                 updateUI('loaded');
-                console.log('✅ Widget chargé avec succès');
             };
 
             iframe.onerror = () => {
                 updateUI('error');
-                console.error('❌ Erreur de chargement du widget');
             };
 
             iframe.src = widgetUrl;
