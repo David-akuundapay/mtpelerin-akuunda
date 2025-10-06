@@ -109,14 +109,14 @@
             <h2>🔧 Configuration Requise</h2>
             <p>Paramètres manquants dans l'URL.</p>
             <div class="url-example">
-                <strong>Exemple VENTE uniquement:</strong><br>
-                ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=bsc_mainnet&code=CODE123&hash=HASH456<br><br>
-                <strong>Exemple ACHAT uniquement:</strong><br>
-                ?tab=buy&bsc=EUR&bdc=USDT&bsa=500&dnet=bsc_mainnet&code=CODE123&hash=HASH456
+                <strong>Exemple VENTE:</strong><br>
+                ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=matic_mainnet&net=matic_mainnet&addr=&code=&hash=<br><br>
+                <strong>Exemple ACHAT:</strong><br>
+                ?tab=buy&bsc=EUR&bdc=USDT&bsa=100&dnet=matic_mainnet&net=matic_mainnet&pm=card&addr=&code=&hash=
             </div>
             <div class="param-info">
                 <strong>Paramètres disponibles:</strong><br>
-                tab, ssc, sdc, ssa, snet, bsc, bdc, bsa, dnet, addr, code, hash, curs, crys
+                tab, ssc, sdc, ssa, snet, net, bsc, bdc, bsa, dnet, pm, addr, code, hash, curs, crys
             </div>
         </div>
 
@@ -146,9 +146,9 @@
             successColor: 'F88809',           // Orange pour succès (pas de vert)
             warningColor: 'FF8C00',           // Orange pour avertissements
             infoColor: 'F88809',              // Orange pour infos
-            lang: 'fr',
+            lang: 'auto',
             hideNetworkSwitch: 'true',
-            hideTabs: 'true'                  // Cacher les onglets Acheter/Vendre
+            display: 'direct'
         };
 
         function parseUrlParameters() {
@@ -159,10 +159,12 @@
                 params[key] = value;
             }
             
-            // Seulement Buy et Sell sont autorisés - pas de Swap
-            const tab = params.tab || 'sell';
+            // Déterminer le tab en fonction des paramètres disponibles
+            let tab = params.tab || params.type || params.tabs || 'sell';
+            
+            // Seulement Buy et Sell sont autorisés
             if (tab === 'swap') {
-                params.tab = 'sell'; // Forcer sell si swap est détecté
+                tab = 'sell';
             }
             
             let requiredParams = [];
@@ -184,7 +186,7 @@
 
         function updateServiceIndicator(params) {
             const indicator = document.getElementById('serviceIndicator');
-            const tab = params.tab || 'sell';
+            const tab = params.tab || params.type || params.tabs || 'sell';
             
             let serviceText = '';
             let serviceIcon = '';
@@ -206,12 +208,15 @@
         }
 
         function formatWidgetUrl(params) {
-            const tab = params.tab || 'sell';
+            const tab = params.tab || params.type || params.tabs || 'sell';
             
             const baseParams = {
                 '_ctkn': CONFIG.API_TOKEN,
                 'tab': tab,
-                'lang': BRANDING.lang,
+                'lang': params.lang || BRANDING.lang,
+                // Paramètres pour afficher uniquement le service sélectionné
+                'display': BRANDING.display,
+                'hideTabs': 'true',
                 // Branding Akuunda - TOUT EN ORANGE pour les boutons
                 'primaryColor': BRANDING.primaryColor,
                 'primaryTextColor': BRANDING.primaryTextColor,
@@ -221,41 +226,38 @@
                 'warningColor': BRANDING.warningColor,
                 'infoColor': BRANDING.infoColor,
                 'hideNetworkSwitch': BRANDING.hideNetworkSwitch,
-                'hideTabs': BRANDING.hideTabs, // Cache les onglets Acheter/Vendre/Échanger
-                // Filtres
-                'curs': params.curs || 'EUR,USD,XOF', // Fiat autorisés
-                'crys': params.crys || 'USDT,USDC,BTC,ETH', // Cryptos autorisées
-                // Autres paramètres
-                'addr': params.addr || '',        // Adresse de destination
-                'code': params.code || '',        // Code promo
-                'hash': params.hash || ''         // Hash de référence
+                // Paramètres communs
+                'net': params.net || 'matic_mainnet',
+                'addr': params.addr || '',
+                'code': params.code || '',
+                'hash': params.hash || ''
             };
 
             // Ajouter les paramètres spécifiques au tab sélectionné
             if (tab === 'sell') {
-                baseParams.ssc = params.ssc || 'USDT';      // Source currency (crypto)
-                baseParams.sdc = params.sdc || 'EUR';       // Destination currency (fiat)
-                baseParams.ssa = params.ssa || '';          // Source amount (optionnel)
-                baseParams.snet = params.snet || 'bsc_mainnet'; // Source network
+                baseParams.ssc = params.ssc || 'USDT';
+                baseParams.sdc = params.sdc || 'EUR';
+                baseParams.ssa = params.ssa || '100';
+                baseParams.snet = params.snet || 'matic_mainnet';
                 
-                // Forcer seulement le tab Sell
-                baseParams.tab = 'sell';
-                baseParams.bsc = '';
-                baseParams.bdc = '';
-                baseParams.bsa = '';
-                baseParams.dnet = '';
+                // Supprimer les paramètres buy
+                delete baseParams.bsc;
+                delete baseParams.bdc;
+                delete baseParams.bsa;
+                delete baseParams.dnet;
+                delete baseParams.pm;
             } else if (tab === 'buy') {
-                baseParams.bsc = params.bsc || 'EUR';       // Source currency (fiat)
-                baseParams.bdc = params.bdc || 'USDT';      // Destination currency (crypto)
-                baseParams.bsa = params.bsa || '';          // Source amount (optionnel)
-                baseParams.dnet = params.dnet || 'bsc_mainnet'; // Destination network
+                baseParams.bsc = params.bsc || 'EUR';
+                baseParams.bdc = params.bdc || 'USDT';
+                baseParams.bsa = params.bsa || '100';
+                baseParams.dnet = params.dnet || 'matic_mainnet';
+                baseParams.pm = params.pm || 'card';
                 
-                // Forcer seulement le tab Buy
-                baseParams.tab = 'buy';
-                baseParams.ssc = '';
-                baseParams.sdc = '';
-                baseParams.ssa = '';
-                baseParams.snet = '';
+                // Supprimer les paramètres sell
+                delete baseParams.ssc;
+                delete baseParams.sdc;
+                delete baseParams.ssa;
+                delete baseParams.snet;
             }
 
             // Nettoyer seulement les paramètres vides
