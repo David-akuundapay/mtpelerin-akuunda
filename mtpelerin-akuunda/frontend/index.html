@@ -1,122 +1,147 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Akuunda Pay – Exchange</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>Akuunda Pay - Exchange</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer-when-downgrade">
   <style>
-    html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f6f7fb}
-    .wrap{max-width:520px;margin:0 auto;padding:20px}
-    .badge{background:#391659;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;text-align:center;margin:10px 0}
-    .note{font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#fff;border:1px solid #e5e6eb;border-radius:10px;padding:10px}
-    iframe{width:100%;height:680px;border:none;border-radius:16px;box-shadow:0 18px 44px rgba(26,16,59,.18)}
-    .hidden{display:none}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') center/cover no-repeat fixed;
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    }
+    .container { max-width: 460px; width: 100%; padding: 20px; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 {
+      font-size: 2rem; font-weight: 700;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header p { color: #fff; text-shadow: 1px 1px 3px #391659; }
+    .badge { background: rgba(57, 22, 89, 0.85); color: #fff; padding: 10px 16px; border-radius: 10px; margin: 10px 0; text-align: center; font-weight: bold; }
+    .panel { background: rgba(255,255,255,.95); border-radius: 20px; padding: 20px; box-shadow: 0 15px 30px rgba(57,22,89,0.2); margin-top: 15px; display: none; }
+    .panel.visible { display: block; }
+    .iframe-box { display: none; }
+    .iframe-box.visible { display: block; }
+    iframe { width: 100%; height: 680px; border: none; border-radius: 16px; box-shadow: 0 25px 50px rgba(57,22,89,0.4); }
+    .footer { text-align: center; margin-top: 20px; font-weight: 500; background: linear-gradient(135deg, #FFFFFF 0%, #F88809 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    code { font-family: monospace; font-size: 0.9rem; background: #f3f0ff; padding: 4px 6px; border-radius: 6px; display: block; margin-top: 8px; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div id="indicator" class="badge">Chargement…</div>
-
-    <div id="err" class="note hidden">
-      <b>Missing/invalid query params.</b><br><br>
-      <b>SELL</b>: <code>?tab=sell&ssc=USDT&sdc=EUR&ssa=100&net=matic_mainnet&snet=matic_mainnet</code><br>
-      <b>BUY</b>: <code>?tab=buy&bsc=EUR&bdc=USDT&bsa=100&net=matic_mainnet&dnet=matic_mainnet&pm=card</code>
+  <div class="container">
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg" alt="Akuunda Pay" style="max-width: 100%; border-radius: 16px;">
+      <h1>Akuunda Pay</h1>
+      <p>Exchange Crypto Sécurisé</p>
     </div>
 
-    <div id="box" class="hidden">
-      <iframe id="w" allow="payment; clipboard-write; ethereum"></iframe>
+    <div id="indicator" class="badge">Chargement du service...</div>
+
+    <div id="errorPanel" class="panel">
+      <strong>Paramètres manquants ou invalides.</strong>
+      <p>Exemples valides :</p>
+      <code>?tab=buy&bsc=EUR&bdc=USDT&bsa=100&net=matic_mainnet&dnet=matic_mainnet&pm=card</code>
+      <code>?tab=sell&ssc=USDT&sdc=EUR&ssa=100&net=matic_mainnet&snet=matic_mainnet</code>
     </div>
+
+    <div id="widgetBox" class="iframe-box">
+      <iframe id="widget" allow="payment; clipboard-write; ethereum; usb"></iframe>
+    </div>
+
+    <div class="footer">💳 Service propulsé par Akuunda Pay</div>
   </div>
 
   <script>
-    // ---- Basic helpers
-    const $ = id => document.getElementById(id);
-    const show = id => $(id).classList.remove('hidden');
-    const hide = id => $(id).classList.add('hidden');
+    const config = {
+      token: '1c7a15d7-7243-4a77-a04e-c2b74061fa88'
+    };
 
-    function qp() {
+    const orange = 'F88809';
+    const white = 'FFFFFF';
+    const bg = 'F8F9FA';
+
+    function qs() {
       const out = {}; const s = new URLSearchParams(location.search);
       for (const [k, v] of s.entries()) out[k] = v;
       return out;
     }
-    const pickTab = t => (t||'').toLowerCase()==='buy' ? 'buy' : (t||'').toLowerCase()==='sell' ? 'sell' : null;
 
-    // ---- Build widget URL (ONLY the chosen service)
-    function buildUrl(p) {
-      const ORANGE = 'F88809', WHITE = 'FFFFFF', BG = 'F8F9FA';
-      const tab = pickTab(p.tab || p.type || p.tabs) || 'buy';
+    function pickTab(raw) {
+      const t = (raw || '').toLowerCase();
+      return (t === 'buy' || t === 'sell') ? t : null;
+    }
 
+    function validParams(p, tab) {
+      const keys = tab === 'buy' ? ['bsc','bdc'] : ['ssc','sdc'];
+      return keys.every(k => p[k]);
+    }
+
+    function updateBadge(tab, p) {
+      const el = document.getElementById('indicator');
+      if (tab === 'buy') {
+        el.textContent = `💳 ACHAT : ${p.bsc} → ${p.bdc} | Montant: ${p.bsa || '100'} ${p.bsc}`;
+      } else {
+        el.textContent = `💰 VENTE : ${p.ssc} → ${p.sdc} | Montant: ${p.ssa || '100'} ${p.ssc}`;
+      }
+    }
+
+    function buildUrl(p, tab) {
       const base = {
-        _ctkn: '1c7a15d7-7243-4a77-a04e-c2b74061fa88',
-        tab,               // active tab
-        tabs: tab,         // show ONLY this tab
+        _ctkn: config.token,
+        tab: tab,
+        tabs: tab,
         hideTabs: 'true',
-        display: 'direct',
         lang: p.lang || 'auto',
-        // theming (multiple aliases to maximize compatibility)
-        primaryColor: ORANGE,
-        primaryTextColor: WHITE,
-        secondaryColor: ORANGE,
-        background: BG,
-        successColor: ORANGE,
-        warningColor: ORANGE,
-        infoColor: ORANGE,
-        accentColor: ORANGE,
-        // common
+        primaryColor: orange,
+        primaryTextColor: white,
+        secondaryColor: orange,
+        background: bg,
+        successColor: orange,
+        warningColor: orange,
+        infoColor: orange,
+        display: 'direct',
         net: p.net || 'matic_mainnet',
         addr: p.addr || '',
         code: p.code || '',
         hash: p.hash || ''
       };
 
-      if (tab === 'sell') {
-        base.ssc  = p.ssc  || 'USDT';
-        base.sdc  = p.sdc  || 'EUR';
-        base.ssa  = p.ssa  || '100';
-        base.snet = p.snet || 'matic_mainnet';
-      } else {
-        base.bsc  = p.bsc  || 'EUR';
-        base.bdc  = p.bdc  || 'USDT';
-        base.bsa  = p.bsa  || '100';
+      if (tab === 'buy') {
+        base.bsc = p.bsc;
+        base.bdc = p.bdc;
+        base.bsa = p.bsa || '100';
         base.dnet = p.dnet || 'matic_mainnet';
-        base.pm   = p.pm   || 'card';
-      }
-
-      Object.keys(base).forEach(k => { if (base[k] === '') delete base[k]; });
-      const qs = new URLSearchParams(base).toString();
-      return `https://widget.mtpelerin.com/?${qs}`;
-    }
-
-    function updateBadge(tab, p) {
-      if (tab === 'sell') {
-        const from = p.ssc || 'USDT', to = p.sdc || 'EUR', a = p.ssa ? ` | Montant: ${p.ssa} ${from}` : '';
-        $('indicator').textContent = `SELL : ${from} → ${to}${a}`;
+        base.pm = p.pm || 'card';
       } else {
-        const from = p.bsc || 'EUR', to = p.bdc || 'USDT', a = p.bsa ? ` | Montant: ${p.bsa} ${from}` : '';
-        $('indicator').textContent = `BUY : ${from} → ${to}${a}`;
+        base.ssc = p.ssc;
+        base.sdc = p.sdc;
+        base.ssa = p.ssa || '100';
+        base.snet = p.snet || 'matic_mainnet';
       }
+
+      const s = new URLSearchParams(base);
+      return `https://widget.mtpelerin.com/?${s.toString()}`;
     }
 
-    // ---- Init
-    (function init(){
-      const p = qp();
-      const tab = pickTab(p.tab || p.type || p.tabs);
-      const need = tab === 'sell' ? ['ssc','sdc'] : ['bsc','bdc'];
+    (function init() {
+      const p = qs();
+      const tab = pickTab(p.tab);
+      const valid = tab && validParams(p, tab);
 
-      if (!tab || need.some(k => !p[k])) {
-        show('err'); hide('box');
-        $('indicator').textContent = '⚠️ Paramètres requis manquants';
+      if (!valid) {
+        document.getElementById('errorPanel').classList.add('visible');
+        document.getElementById('indicator').textContent = '❌ Paramètres invalides';
         return;
       }
 
       updateBadge(tab, p);
-      const url = buildUrl(p);
-      const iframe = $('w');
-
-      hide('err'); show('box');
-      iframe.onload = () => { /* loaded */ };
-      iframe.onerror = () => { show('err'); $('indicator').textContent = '❌ Échec de chargement'; };
+      const url = buildUrl(p, tab);
+      const iframe = document.getElementById('widget');
       iframe.src = url;
+      document.getElementById('widgetBox').classList.add('visible');
     })();
   </script>
 </body>
