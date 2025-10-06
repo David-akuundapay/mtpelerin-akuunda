@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Akuunda Pay</title>
+    <title>Akuunda Pay - Crypto Exchange</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer-when-downgrade">
     
@@ -109,9 +109,23 @@
         };
 
         const BRANDING = {
+            // Couleurs principales
             primary: '%23F88809',    // Orange pour les boutons principaux
-            success: '%239971BE',    // Violet pour les succès
-            mylogo: 'https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/favicon.png'
+            success: '%2300AA55',    // Vert pour les succès
+            background: '%23FFFFFF', // Fond blanc
+            onPrimary: '%23FFFFFF',  // Texte sur boutons orange
+            onBackground: '%23391659', // Texte principal violet foncé
+            surface: '%23F5F5F5',    // Surface des cartes
+            onSurface: '%23391659',  // Texte sur surfaces
+            error: '%23FF0000',      // Rouge pour les erreurs
+            
+            // Logo
+            mylogo: 'https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/favicon.png',
+            
+            // Paramètres additionnels pour la visibilité
+            addr: '%23391659',       // Couleur des adresses
+            code: '%239971BE',       // Couleur des codes
+            hash: '%23F88809'        // Couleur des hash
         };
 
         function parseUrlParameters() {
@@ -145,6 +159,7 @@
                 'net': params.network || 'matic_mainnet'
             };
 
+            // Ajouter TOUS les paramètres de branding
             const allParams = { ...baseParams, ...BRANDING };
             const urlParams = new URLSearchParams(allParams);
 
@@ -263,11 +278,15 @@
             const widgetUrl = formatWidgetUrl(params);
             const iframe = document.getElementById('widget');
             
+            console.log('🚀 Chargement widget avec branding complet:', widgetUrl);
+
             iframe.onload = () => {
+                console.log('✅ Widget Mt Pelerin chargé avec branding Akuunda Pay');
                 updateUI('loaded');
             };
 
             iframe.onerror = () => {
+                console.log('❌ Erreur chargement widget');
                 updateUI('error');
             };
 
