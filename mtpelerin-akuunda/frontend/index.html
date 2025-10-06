@@ -98,7 +98,7 @@
         <div class="header">
             <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg" alt="Akuunda Pay" class="hero-image">
             <h1>Akuunda Pay</h1>
-            <p>Échange Crypto Sécurisé</p>
+            <p>Sécuriser votre paiements</p>
         </div>
 
         <div class="service-indicator" id="serviceIndicator">
@@ -109,9 +109,9 @@
             <h2>🔧 Configuration Requise</h2>
             <p>Paramètres manquants dans l'URL.</p>
             <div class="url-example">
-                <strong>Exemple VENTE:</strong><br>
+                <strong>Exemple VENTE uniquement:</strong><br>
                 ?tab=sell&ssc=USDT&sdc=EUR&ssa=100&snet=bsc_mainnet&code=CODE123&hash=HASH456<br><br>
-                <strong>Exemple ACHAT:</strong><br>
+                <strong>Exemple ACHAT uniquement:</strong><br>
                 ?tab=buy&bsc=EUR&bdc=USDT&bsa=500&dnet=bsc_mainnet&code=CODE123&hash=HASH456
             </div>
             <div class="param-info">
@@ -147,7 +147,8 @@
             warningColor: 'FF8C00',           // Orange pour avertissements
             infoColor: 'F88809',              // Orange pour infos
             lang: 'fr',
-            hideNetworkSwitch: 'true'
+            hideNetworkSwitch: 'true',
+            hideTabs: 'true'                  // Cacher les onglets Acheter/Vendre
         };
 
         function parseUrlParameters() {
@@ -189,11 +190,11 @@
             let serviceIcon = '';
             
             if (tab === 'sell') {
-                serviceIcon = '💰';
-                serviceText = `VENTE - ${params.ssc || 'USDT'} → ${params.sdc || 'EUR'}`;
+                serviceIcon = '💰 VENTE';
+                serviceText = `${params.ssc || 'USDT'} → ${params.sdc || 'EUR'}`;
             } else if (tab === 'buy') {
-                serviceIcon = '💳';
-                serviceText = `ACHAT - ${params.bsc || 'EUR'} → ${params.bdc || 'USDT'}`;
+                serviceIcon = '💳 ACHAT';
+                serviceText = `${params.bsc || 'EUR'} → ${params.bdc || 'USDT'}`;
             }
             
             if (params.ssa || params.bsa) {
@@ -201,27 +202,16 @@
                 serviceText += ` | Montant: ${amount} ${tab === 'sell' ? params.ssc : params.bsc}`;
             }
             
-            indicator.innerHTML = `${serviceIcon} ${serviceText}`;
+            indicator.innerHTML = `${serviceIcon} : ${serviceText}`;
         }
 
         function formatWidgetUrl(params) {
+            const tab = params.tab || 'sell';
+            
             const baseParams = {
                 '_ctkn': CONFIG.API_TOKEN,
-                'tab': params.tab || 'sell',
+                'tab': tab,
                 'lang': BRANDING.lang,
-                // Paramètres SELL (Off-ramp)
-                'ssc': params.ssc || 'USDT',      // Source currency (crypto)
-                'sdc': params.sdc || 'EUR',       // Destination currency (fiat)
-                'ssa': params.ssa || '',          // Source amount (optionnel)
-                'snet': params.snet || 'bsc_mainnet', // Source network
-                // Paramètres BUY (On-ramp)
-                'bsc': params.bsc || 'EUR',       // Source currency (fiat)
-                'bdc': params.bdc || 'USDT',      // Destination currency (crypto)
-                'bsa': params.bsa || '',          // Source amount (optionnel)
-                'dnet': params.dnet || 'bsc_mainnet', // Destination network
-                // Filtres
-                'curs': params.curs || 'EUR,USD,XOF', // Fiat autorisés
-                'crys': params.crys || 'USDT,USDC,BTC,ETH', // Cryptos autorisées
                 // Branding Akuunda - TOUT EN ORANGE pour les boutons
                 'primaryColor': BRANDING.primaryColor,
                 'primaryTextColor': BRANDING.primaryTextColor,
@@ -231,11 +221,42 @@
                 'warningColor': BRANDING.warningColor,
                 'infoColor': BRANDING.infoColor,
                 'hideNetworkSwitch': BRANDING.hideNetworkSwitch,
-                // Autres paramètres (conservés)
+                'hideTabs': BRANDING.hideTabs, // Cache les onglets Acheter/Vendre/Échanger
+                // Filtres
+                'curs': params.curs || 'EUR,USD,XOF', // Fiat autorisés
+                'crys': params.crys || 'USDT,USDC,BTC,ETH', // Cryptos autorisées
+                // Autres paramètres
                 'addr': params.addr || '',        // Adresse de destination
                 'code': params.code || '',        // Code promo
                 'hash': params.hash || ''         // Hash de référence
             };
+
+            // Ajouter les paramètres spécifiques au tab sélectionné
+            if (tab === 'sell') {
+                baseParams.ssc = params.ssc || 'USDT';      // Source currency (crypto)
+                baseParams.sdc = params.sdc || 'EUR';       // Destination currency (fiat)
+                baseParams.ssa = params.ssa || '';          // Source amount (optionnel)
+                baseParams.snet = params.snet || 'bsc_mainnet'; // Source network
+                
+                // Forcer seulement le tab Sell
+                baseParams.tab = 'sell';
+                baseParams.bsc = '';
+                baseParams.bdc = '';
+                baseParams.bsa = '';
+                baseParams.dnet = '';
+            } else if (tab === 'buy') {
+                baseParams.bsc = params.bsc || 'EUR';       // Source currency (fiat)
+                baseParams.bdc = params.bdc || 'USDT';      // Destination currency (crypto)
+                baseParams.bsa = params.bsa || '';          // Source amount (optionnel)
+                baseParams.dnet = params.dnet || 'bsc_mainnet'; // Destination network
+                
+                // Forcer seulement le tab Buy
+                baseParams.tab = 'buy';
+                baseParams.ssc = '';
+                baseParams.sdc = '';
+                baseParams.ssa = '';
+                baseParams.snet = '';
+            }
 
             // Nettoyer seulement les paramètres vides
             Object.keys(baseParams).forEach(key => {
@@ -272,30 +293,9 @@
                         case 'orderFailed':
                             handleOrderFailed(message.data);
                             break;
-                        case 'tabChanged':
-                            updateTabIndicator(message.data);
-                            break;
                     }
                 } catch (error) {}
             });
-        }
-
-        function updateTabIndicator(tabData) {
-            const indicator = document.getElementById('serviceIndicator');
-            if (tabData?.tab) {
-                let serviceText = '';
-                let serviceIcon = '';
-                
-                if (tabData.tab === 'sell') {
-                    serviceIcon = '💰';
-                    serviceText = `VENTE - ${tabData.fromCurrency || 'Crypto'} → ${tabData.toCurrency || 'Fiat'}`;
-                } else if (tabData.tab === 'buy') {
-                    serviceIcon = '💳';
-                    serviceText = `ACHAT - ${tabData.fromCurrency || 'Fiat'} → ${tabData.toCurrency || 'Crypto'}`;
-                }
-                
-                indicator.innerHTML = `${serviceIcon} ${serviceText}`;
-            }
         }
 
         async function handleOrderCreated(order) {
