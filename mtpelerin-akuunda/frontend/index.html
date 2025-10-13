@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Akuunda Pay - Crypto Exchange</title>
+    <title>Akuunda Pay - Sell Crypto</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer-when-downgrade">
     
@@ -77,12 +77,13 @@
         </div>
 
         <div class="widget-container" id="widgetContainer">
-            <iframe id="widget" allow="usb; ethereum; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Exchange Platform"></iframe>
+            <iframe id="widget" allow="usb; ethereum; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Sell Crypto"></iframe>
         </div>
 
         <div class="error-message" id="errorMessage">
             <h2>🔧 Configuration Requise</h2>
             <p>Paramètres manquants dans l'URL.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">Exemple: <code>?type=sell&ssc=USDT&sdc=EUR</code></p>
         </div>
 
         <div class="akuunda-footer">💳 Service sécurisé par Akuunda Pay</div>
@@ -115,23 +116,24 @@
                 params[key] = value;
             }
 
-            // Forcer le mode "sell" uniquement
-            const tab = 'sell';
-
-            const requiredParams = ['ssc', 'sdc'];
-
+            // Vérifier les paramètres requis pour le mode vente
+            const requiredParams = ['type', 'ssc', 'sdc'];
             const missing = requiredParams.filter(k => !params[k]);
-            if (missing.length > 0) return { valid: false, tab, params };
-            return { valid: true, tab, params };
+            
+            if (missing.length > 0) return { valid: false, params };
+            return { valid: true, params };
         }
 
-        function formatWidgetUrl(params, tab) {
+        function formatWidgetUrl(params) {
             const baseParams = {
                 _ctkn: CONFIG.API_TOKEN,
-                tab,
-                lang: BRANDING.lang,
+                // Paramètres officiels MTPelerin
+                type: params.type || 'sell',
+                tab: params.tab || 'sell',
+                tabs: params.tabs || 'sell',
+                lang: params.lang || BRANDING.lang,
                 display: BRANDING.display,
-                hideTabs: 'true',
+                // Paramètres de branding
                 primaryColor: BRANDING.primaryColor,
                 primaryTextColor: BRANDING.primaryTextColor,
                 secondaryColor: BRANDING.secondaryColor,
@@ -140,19 +142,23 @@
                 warningColor: BRANDING.warningColor,
                 infoColor: BRANDING.infoColor,
                 hideNetworkSwitch: BRANDING.hideNetworkSwitch,
+                // Paramètres de transaction
+                ssc: params.ssc,
+                sdc: params.sdc,
+                ssa: params.ssa || '100',
+                snet: params.snet || 'matic_mainnet',
                 net: params.net || 'matic_mainnet',
+                pm: params.pm || 'card',
                 addr: params.addr || '',
                 code: params.code || '',
                 hash: params.hash || ''
             };
 
-            // Configuration pour le mode vente uniquement
-            baseParams.ssc = params.ssc || 'USDT';
-            baseParams.sdc = params.sdc || 'EUR';
-            baseParams.ssa = params.ssa || '100';
-            baseParams.snet = params.snet || 'matic_mainnet';
-
-            Object.keys(baseParams).forEach(k => { if (!baseParams[k]) delete baseParams[k]; });
+            // Nettoyer les paramètres vides
+            Object.keys(baseParams).forEach(k => { 
+                if (!baseParams[k] || baseParams[k] === 'undefined') delete baseParams[k]; 
+            });
+            
             return `https://widget.mtpelerin.com/?${new URLSearchParams(baseParams).toString()}`;
         }
 
@@ -237,9 +243,9 @@
             if (state === 'loaded') document.getElementById('widgetContainer').style.display = 'block';
         }
 
-        function loadWidget(params, tab) {
+        function loadWidget(params) {
             updateUI('loading');
-            const url = formatWidgetUrl(params, tab);
+            const url = formatWidgetUrl(params);
             const iframe = document.getElementById('widget');
             iframe.onload = () => updateUI('loaded');
             iframe.onerror = () => updateUI('error');
@@ -248,9 +254,9 @@
 
         function initializeApp() {
             setupWidgetEventListener();
-            const { valid, tab, params } = parseUrlParameters();
+            const { valid, params } = parseUrlParameters();
             if (!valid) return updateUI('error');
-            loadWidget(params, tab);
+            loadWidget(params);
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
