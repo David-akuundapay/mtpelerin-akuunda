@@ -115,12 +115,10 @@
                 params[key] = value;
             }
 
-            let tab = params.tab || 'sell';
-            if (!['sell', 'buy'].includes(tab)) tab = 'sell';
+            // Forcer le mode "sell" uniquement
+            const tab = 'sell';
 
-            const requiredParams = tab === 'sell'
-                ? ['ssc', 'sdc']
-                : ['bsc', 'bdc'];
+            const requiredParams = ['ssc', 'sdc'];
 
             const missing = requiredParams.filter(k => !params[k]);
             if (missing.length > 0) return { valid: false, tab, params };
@@ -148,18 +146,11 @@
                 hash: params.hash || ''
             };
 
-            if (tab === 'sell') {
-                baseParams.ssc = params.ssc || 'USDT';
-                baseParams.sdc = params.sdc || 'EUR';
-                baseParams.ssa = params.ssa || '100';
-                baseParams.snet = params.snet || 'matic_mainnet';
-            } else {
-                baseParams.bsc = params.bsc || 'EUR';
-                baseParams.bdc = params.bdc || 'USDT';
-                baseParams.bsa = params.bsa || '100';
-                baseParams.dnet = params.dnet || 'matic_mainnet';
-                baseParams.pm = params.pm || 'card';
-            }
+            // Configuration pour le mode vente uniquement
+            baseParams.ssc = params.ssc || 'USDT';
+            baseParams.sdc = params.sdc || 'EUR';
+            baseParams.ssa = params.ssa || '100';
+            baseParams.snet = params.snet || 'matic_mainnet';
 
             Object.keys(baseParams).forEach(k => { if (!baseParams[k]) delete baseParams[k]; });
             return `https://widget.mtpelerin.com/?${new URLSearchParams(baseParams).toString()}`;
