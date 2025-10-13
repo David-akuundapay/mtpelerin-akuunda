@@ -77,7 +77,8 @@
         </div>
 
         <div class="widget-container" id="widgetContainer">
-            <iframe id="widget" allow="usb; ethereum; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Sell Crypto"></iframe>
+            <!-- Correction : retirer 'ethereum' de l'attribut allow -->
+            <iframe id="widget" allow="usb; clipboard-write; payment;" loading="eager" title="Akuunda Pay - Sell Crypto"></iframe>
         </div>
 
         <div class="error-message" id="errorMessage">
@@ -113,26 +114,50 @@
             const params = {};
 
             for (const [key, value] of urlParams.entries()) {
-                params[key] = value;
+                // Nettoyer les valeurs
+                params[key] = value.trim();
             }
 
             // Vérifier les paramètres requis pour le mode vente
             const requiredParams = ['type', 'ssc', 'sdc'];
-            const missing = requiredParams.filter(k => !params[k]);
+            const missing = requiredParams.filter(k => !params[k] || params[k] === 'undefined');
             
-            if (missing.length > 0) return { valid: false, params };
+            if (missing.length > 0) {
+                console.warn('Paramètres manquants:', missing);
+                return { valid: false, params };
+            }
+            
+            // Validation des valeurs
+            if (!params.ssc || !params.sdc) {
+                console.warn('Paramètres ssc ou sdc invalides');
+                return { valid: false, params };
+            }
+            
             return { valid: true, params };
         }
 
         function formatWidgetUrl(params) {
+            // Paramètres de base avec valeurs par défaut sécurisées
             const baseParams = {
                 _ctkn: CONFIG.API_TOKEN,
-                // Paramètres officiels MTPelerin
-                type: params.type || 'sell',
-                tab: params.tab || 'sell',
-                tabs: params.tabs || 'sell',
+                // Paramètres de transaction (toujours définis)
+                type: 'sell',
+                tab: 'sell',
+                ssc: params.ssc,
+                sdc: params.sdc,
+                // Paramètres avec valeurs par défaut sécurisées
+                ssa: params.ssa && !isNaN(params.ssa) ? params.ssa : '100',
+                snet: params.snet || 'matic_mainnet',
+                net: params.net || 'matic_mainnet',
                 lang: params.lang || BRANDING.lang,
                 display: BRANDING.display,
+                // Paramètres optionnels (seulement si fournis)
+                ...(params.pm && { pm: params.pm }),
+                ...(params.addr && { addr: params.addr }),
+                ...(params.code && { code: params.code }),
+                ...(params.hash && { hash: params.hash }),
+                ...(params.phone && { phone: params.phone }),
+                ...(params.ctry && { ctry: params.ctry }),
                 // Paramètres de branding
                 primaryColor: BRANDING.primaryColor,
                 primaryTextColor: BRANDING.primaryTextColor,
@@ -141,28 +166,19 @@
                 successColor: BRANDING.successColor,
                 warningColor: BRANDING.warningColor,
                 infoColor: BRANDING.infoColor,
-                hideNetworkSwitch: BRANDING.hideNetworkSwitch,
-                // Paramètres de transaction
-                ssc: params.ssc,
-                sdc: params.sdc,
-                ssa: params.ssa || '100',
-                snet: params.snet || 'matic_mainnet',
-                net: params.net || 'matic_mainnet',
-                pm: params.pm || 'card',
-                addr: params.addr || '',
-                code: params.code || '',
-                hash: params.hash || '',
-                // Nouveaux paramètres téléphone et pays
-                phone: params.phone || '',
-                ctry: params.ctry || ''
+                hideNetworkSwitch: BRANDING.hideNetworkSwitch
             };
 
-            // Nettoyer les paramètres vides
+            // Nettoyer les paramètres vides ou undefined
             Object.keys(baseParams).forEach(k => { 
-                if (!baseParams[k] || baseParams[k] === 'undefined') delete baseParams[k]; 
+                if (baseParams[k] === undefined || baseParams[k] === null || baseParams[k] === '') {
+                    delete baseParams[k];
+                }
             });
             
-            return `https://widget.mtpelerin.com/?${new URLSearchParams(baseParams).toString()}`;
+            const url = `https://widget.mtpelerin.com/?${new URLSearchParams(baseParams).toString()}`;
+            console.log('URL du widget:', url);
+            return url;
         }
 
         function setupWidgetEventListener() {
@@ -177,7 +193,9 @@
                         case 'orderCompleted': return handleOrderCompleted(message.data);
                         case 'orderFailed': return handleOrderFailed(message.data);
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('Erreur traitement message:', e);
+                }
             });
         }
 
@@ -250,17 +268,43 @@
             updateUI('loading');
             const url = formatWidgetUrl(params);
             const iframe = document.getElementById('widget');
-            iframe.onload = () => updateUI('loaded');
-            iframe.onerror = () => updateUI('error');
+            
+            iframe.onload = () => {
+                console.log('Widget chargé avec succès');
+                updateUI('loaded');
+            };
+            
+            iframe.onerror = (error) => {
+                console.error('Erreur chargement widget:', error);
+                updateUI('error');
+            };
+            
             iframe.src = url;
         }
 
         function initializeApp() {
+            console.log('Initialisation Akuunda Pay...');
             setupWidgetEventListener();
             const { valid, params } = parseUrlParameters();
-            if (!valid) return updateUI('error');
+            
+            if (!valid) {
+                console.error('Paramètres invalides:', params);
+                updateUI('error');
+                return;
+            }
+            
+            console.log('Paramètres valides:', params);
             loadWidget(params);
         }
+
+        // Gestion des erreurs globales
+        window.addEventListener('error', (event) => {
+            console.error('Erreur globale:', event.error);
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Promise rejetée:', event.reason);
+        });
 
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
