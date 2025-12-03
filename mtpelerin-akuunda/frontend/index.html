@@ -141,7 +141,7 @@
     function initializeApp() {
         const params = parseUrlParameters();
 
-        // Si ni BUY ni SELL → erreur
+        // Si ni BUY ni SELL ni SWAP → erreur
         if (!params.tab) {
             return updateUI("error");
         }
