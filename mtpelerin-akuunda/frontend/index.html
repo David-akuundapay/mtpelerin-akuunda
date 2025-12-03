@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Akuunda Pay - Crypto Widget</title>
+    <title>Akuunda Pay</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer-when-downgrade">
 
@@ -10,146 +10,114 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: #f0f0f0;
+            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') no-repeat center center fixed;
+            background-size: cover;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
         }
 
         .container { width: 100%; max-width: 450px; margin: 20px; }
 
-        iframe {
-            width: 100%; 
-            height: 680px; 
-            border: none; 
-            border-radius: 15px; 
-            background: white;
+        .header { text-align: center; margin-bottom: 20px; }
+
+        .hero-image {
+            width: 420px;
+            height: auto;
+            border-radius: 15px;
+            object-fit: contain;
+            border: 5px solid #FFFFFF;
+            box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
+            margin: 0 auto 25px auto;
+            display: block;
+            max-width: 95%;
         }
 
-        .loading, .error-message {
-            background: white;
+        iframe {
+            width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
+        }
+
+        .error-message {
+            background: rgba(255,255,255,0.9);
             padding: 25px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             display: none;
+            margin-bottom: 20px;
         }
-
-        .error-message { color: #b00020; }
     </style>
 </head>
 
 <body>
 <div class="container">
 
-    <div class="loading" id="loadingMessage">
-        <h2>Chargement...</h2>
-        <p>Initialisation du widget Akuunda Pay</p>
+    <div class="header">
+        <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
+             alt="Akuunda Pay" class="hero-image">
+        <h1 style="color:white; text-shadow: 2px 2px 6px black;">Akuunda Pay</h1>
     </div>
 
     <div class="error-message" id="errorMessage">
-        <h2>Paramètres manquants</h2>
-        <p>Veuillez vérifier les paramètres de l’URL.</p>
+        <h2>❌ Paramètre manquant</h2>
+        <p>Le paramètre obligatoire <b>tab</b> n’a pas été fourni.</p>
     </div>
 
-    <div class="widget-container" id="widgetContainer" style="display:none;">
-        <iframe id="widget" allow="usb; clipboard-write; payment;"></iframe>
-    </div>
+    <iframe id="widget"></iframe>
 
 </div>
 
 <script>
-    const CONFIG = {
-        BACKEND_URL: "https://mtpay.akuunda-pay.io/api/mtpelerin",
-        API_TOKEN: "1c7a15d7-7243-4a77-a04e-c2b74061fa88"
-    };
+    const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
 
-    /** Lire tous les paramètres URL sans filtrage */
-    function parseUrlParameters() {
-        const urlParams = new URLSearchParams(window.location.search);
+    /** Lire tous les paramètres de l’URL */
+    function getParams() {
         const params = {};
+        const urlParams = new URLSearchParams(window.location.search);
         for (const [key, value] of urlParams.entries()) {
             params[key] = value.trim();
         }
         return params;
     }
 
-    /**
-     * 🔥 Construction de l'URL Mt Pelerin
-     * Rien n’est forcé : on reprend exactement ce que tu mets dans l’URL.
-     */
-    function formatWidgetUrl(params) {
+    /** Construire l’URL du widget Mt Pelerin (pass-through total) */
+    function buildWidgetURL(params) {
 
-        const base = {
-            _ctkn: CONFIG.API_TOKEN,
+        const finalParams = {
+            _ctkn: API_TOKEN,
             type: params.type || "direct-link",
-            display: "direct"
+            display: "direct",
         };
 
-        // Copier tous les paramètres de l’URL
+        // Copier *tous* les paramètres fournis
         Object.keys(params).forEach(key => {
             if (params[key] !== "" && params[key] !== undefined) {
-                base[key] = params[key];
+                finalParams[key] = params[key];
             }
         });
 
-        // Si tab existe mais pas tabs → auto-ajouter tabs=tab
+        // Si tab existe mais pas tabs → auto-ajout
         if (params.tab && !params.tabs) {
-            base.tabs = params.tab;
+            finalParams.tabs = params.tab;
         }
 
-        // Nettoyage final
-        Object.keys(base).forEach(k => {
-            if (base[k] === null || base[k] === undefined || base[k] === "") {
-                delete base[k];
-            }
-        });
-
-        const url = `https://widget.mtpelerin.com/?${new URLSearchParams(base).toString()}`;
-        console.log("URL widget final :", url);
-
-        return url;
+        return "https://widget.mtpelerin.com/?" + new URLSearchParams(finalParams).toString();
     }
 
-    function updateUI(state) {
-        document.getElementById("errorMessage").style.display = "none";
-        document.getElementById("loadingMessage").style.display = "none";
-        document.getElementById("widgetContainer").style.display = "none";
+    /** Initialisation */
+    function init() {
+        const params = getParams();
 
-        if (state === "error") document.getElementById("errorMessage").style.display = "block";
-        if (state === "loading") document.getElementById("loadingMessage").style.display = "block";
-        if (state === "loaded") document.getElementById("widgetContainer").style.display = "block";
-    }
-
-    function loadWidget(params) {
-        updateUI("loading");
-
-        const url = formatWidgetUrl(params);
-        const iframe = document.getElementById("widget");
-
-        iframe.onload = () => {
-            updateUI("loaded");
-        };
-
-        iframe.onerror = () => {
-            updateUI("error");
-        };
-
-        iframe.src = url;
-    }
-
-    function initializeApp() {
-        const params = parseUrlParameters();
-
-        // Si ni BUY ni SELL ni SWAP → erreur
+        // sécurité minimale : tab obligatoire
         if (!params.tab) {
-            return updateUI("error");
+            document.getElementById("errorMessage").style.display = "block";
+            return;
         }
 
-        loadWidget(params);
+        const url = buildWidgetURL(params);
+        document.getElementById("widget").src = url;
     }
 
-    document.addEventListener("DOMContentLoaded", initializeApp);
+    init();
 </script>
 
 </body>
