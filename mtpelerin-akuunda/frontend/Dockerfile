@@ -9,7 +9,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY index.html /usr/share/nginx/html/index.html
 
 # Copy images folder
-COPY images /usr/share/nginx/html/images
+COPY /mtpelerin-akuunda/images /usr/share/nginx/html/images
 
 EXPOSE 80
 
