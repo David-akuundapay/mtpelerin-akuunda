@@ -3,13 +3,13 @@ FROM nginx:alpine
 RUN apk add --no-cache wget
 
 # Copy Nginx configuration
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy index.html
-COPY frontend/index.html /usr/share/nginx/html/index.html
+# Copy HTML
+COPY index.html /usr/share/nginx/html/index.html
 
-# Copy images folder (logos, backgrounds, favicon)
-COPY frontend/images /usr/share/nginx/html/images
+# Copy images
+COPY images /usr/share/nginx/html/images
 
 EXPOSE 80
 
