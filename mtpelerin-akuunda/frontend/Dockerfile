@@ -2,8 +2,12 @@ FROM nginx:alpine
 
 RUN apk add --no-cache wget
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html /usr/share/nginx/html/
+# Copy Nginx configuration
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy the frontend files
+COPY frontend/index.html /usr/share/nginx/html/
+COPY frontend/images /usr/share/nginx/html/images
 
 EXPOSE 80
 
