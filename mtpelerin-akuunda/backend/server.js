@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -7,6 +8,35 @@ app.use(cors());
 app.use(express.json());
 
 const ordersDatabase = new Map();
+
+/**
+ * 👇 Route ajoutée (DEPOSIT)
+ * front → backend (postMessage SELL)
+ */
+app.post('/api/mtpelerin/deposit', (req, res) => {
+    try {
+        console.log("🔥 [BACKEND] Deposit reçu:", req.body);
+
+        const { orderId, depositAddress } = req.body;
+
+        if(orderId){
+            ordersDatabase.set(orderId, {
+                ...(ordersDatabase.get(orderId) || {}),
+                depositAddress,
+                status: 'deposit_created',
+                updatedAt: new Date()
+            });
+        }
+
+        res.json({ success: true });
+
+    } catch (err) {
+        console.error("❌ deposit error:", err);
+        res.status(500).json({ error: 'server-error' });
+    }
+});
+
+
 
 app.post('/api/mtpelerin/order/created', (req, res) => {
     try {
@@ -38,6 +68,8 @@ app.post('/api/mtpelerin/order/created', (req, res) => {
     }
 });
 
+
+
 app.post('/api/mtpelerin/payment/submitted', (req, res) => {
     const paymentData = req.body;
     console.log('💳 Paiement soumis:', paymentData.orderId);
@@ -47,6 +79,8 @@ app.post('/api/mtpelerin/payment/submitted', (req, res) => {
     
     res.json({ success: true });
 });
+
+
 
 app.post('/api/mtpelerin/order/completed', (req, res) => {
     const completionData = req.body;
@@ -58,6 +92,8 @@ app.post('/api/mtpelerin/order/completed', (req, res) => {
     res.json({ success: true });
 });
 
+
+
 app.post('/api/mtpelerin/order/failed', (req, res) => {
     const failureData = req.body;
     console.log('❌ Ordre échoué:', failureData.orderId);
@@ -67,6 +103,8 @@ app.post('/api/mtpelerin/order/failed', (req, res) => {
     
     res.json({ success: true });
 });
+
+
 
 app.get('/api/mtpelerin/orders', (req, res) => {
     const orders = Array.from(ordersDatabase.entries()).map(([id, order]) => ({
@@ -80,13 +118,17 @@ app.get('/api/mtpelerin/orders', (req, res) => {
     });
 });
 
+
+
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        ordersCount: ordersDatabase.size
+        ordersCount: ordersDatabase.size,
+        env: "production"
     });
 });
+
 
 app.listen(PORT, () => {
     console.log(`🚀 Backend Akuunda Pay démarré sur le port ${PORT}`);
