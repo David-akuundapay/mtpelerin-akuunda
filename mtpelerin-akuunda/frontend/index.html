@@ -69,7 +69,6 @@
 <script>
     const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
 
-    /** Lire tous les paramètres de l’URL */
     function getParams() {
         const params = {};
         const urlParams = new URLSearchParams(window.location.search);
@@ -79,23 +78,19 @@
         return params;
     }
 
-    /** Construire l’URL du widget Mt Pelerin (pass-through total) */
     function buildWidgetURL(params) {
-
         const finalParams = {
             _ctkn: API_TOKEN,
             type: params.type || "direct-link",
             display: "direct",
         };
 
-        // Copier *tous* les paramètres fournis
         Object.keys(params).forEach(key => {
             if (params[key] !== "" && params[key] !== undefined) {
                 finalParams[key] = params[key];
             }
         });
 
-        // Si tab existe mais pas tabs → auto-ajout
         if (params.tab && !params.tabs) {
             finalParams.tabs = params.tab;
         }
@@ -103,11 +98,8 @@
         return "https://widget.mtpelerin.com/?" + new URLSearchParams(finalParams).toString();
     }
 
-    /** Initialisation */
     function init() {
         const params = getParams();
-
-        // sécurité minimale : tab obligatoire
         if (!params.tab) {
             document.getElementById("errorMessage").style.display = "block";
             return;
@@ -118,6 +110,38 @@
     }
 
     init();
+</script>
+
+<script>
+/**
+ * Listener silencieux pour récupérer depositAddress (SELL)
+ */
+(function() {
+    console.log("[MTP][Init] Deposit listener actif");
+
+    window.addEventListener("message", (ev) => {
+        const data = ev.data;
+
+        if (!ev.origin.includes("mtpelerin.com")) return;
+
+        if (data?.depositAddress) {
+            console.log("[MTP][depositAddress]", data.depositAddress);
+
+            fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    orderId: data.orderId || null,
+                    depositAddress: data.depositAddress,
+                    chain: data.chain || null,
+                    currency: data.currency || null,
+                    amount: data.amount || null,
+                    createdAt: new Date().toISOString()
+                })
+            }).catch(()=>{});
+        }
+    });
+})();
 </script>
 
 </body>
