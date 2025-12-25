@@ -8,11 +8,13 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') no-repeat center center fixed;
             background-size: cover;
-            display: flex; justify-content: center; align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
         }
 
@@ -22,9 +24,7 @@
 
         .hero-image {
             width: 420px;
-            height: auto;
             border-radius: 15px;
-            object-fit: contain;
             border: 5px solid #FFFFFF;
             box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
             margin: 0 auto 25px auto;
@@ -33,7 +33,11 @@
         }
 
         iframe {
-            width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
+            width: 100%;
+            height: 680px;
+            border: none;
+            border-radius: 20px;
+            background: white;
         }
 
         .error-message {
@@ -62,16 +66,17 @@
         <p>Le paramètre obligatoire <b>tab</b> n’a pas été fourni.</p>
     </div>
 
-    <iframe 
+    <iframe
         id="widget"
         allow="usb; ethereum; clipboard-write; payment; microphone; camera"
-        loading="lazy"
-    ></iframe>
+        loading="lazy">
+    </iframe>
 
 </div>
 
 <script>
-    const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
+    const API_TOKEN  = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
+    const DEFAULT_RFR = "5qCpmK2X"; // 👈 referral Akuunda Pay
 
     function getParams() {
         const params = {};
@@ -87,6 +92,7 @@
             _ctkn: API_TOKEN,
             type: params.type || "direct-link",
             display: "direct",
+            rfr: params.rfr || DEFAULT_RFR // ✅ rfr toujours présent
         };
 
         Object.keys(params).forEach(key => {
@@ -104,6 +110,7 @@
 
     function init() {
         const params = getParams();
+
         if (!params.tab) {
             document.getElementById("errorMessage").style.display = "block";
             return;
@@ -124,9 +131,9 @@
     console.log("[MTP][Init] Deposit listener actif");
 
     window.addEventListener("message", (ev) => {
-        const data = ev.data;
-
         if (!ev.origin.includes("mtpelerin.com")) return;
+
+        const data = ev.data;
 
         if (data?.depositAddress) {
             console.log("[MTP][depositAddress]", data.depositAddress);
@@ -142,7 +149,7 @@
                     amount: data.amount || null,
                     createdAt: new Date().toISOString()
                 })
-            }).catch(()=>{});
+            }).catch(() => {});
         }
     });
 })();
