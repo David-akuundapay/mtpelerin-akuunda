@@ -29,21 +29,22 @@
             margin: 20px;
         }
 
+        /* HEADER COMPACT */
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 8px; /* 🔑 fait remonter le widget */
         }
 
         .hero-image {
-            width: 420px;
-            max-width: 95%;
-            height: auto;
+            width: 100%;
+            max-width: 420px;
+            height: 110px;              /* 🔑 hauteur réduite */
+            object-fit: contain;        /* préserve le logo + slogan */
+            display: block;
+            margin: 0 auto 6px auto;    /* 🔑 réduit l’espace sous le logo */
             border-radius: 15px;
-            object-fit: contain;
             border: 5px solid #FFFFFF;
             box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
-            margin: 0 auto 25px auto;
-            display: block;
         }
 
         iframe {
@@ -56,12 +57,24 @@
 
         .error-message {
             display: none;
-            margin-bottom: 20px;
-            padding: 25px;
+            margin-bottom: 15px;
+            padding: 20px;
             text-align: center;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* MOBILE : encore plus compact */
+        @media (max-width: 480px) {
+            .hero-image {
+                height: 95px;
+                margin-bottom: 4px;
+            }
+
+            iframe {
+                height: 640px;
+            }
         }
     </style>
 </head>
@@ -146,16 +159,12 @@
     <!-- Listener silencieux depositAddress (SELL) -->
     <script>
         (function () {
-            console.log("[MTP][Init] Deposit listener actif");
-
             window.addEventListener("message", (ev) => {
                 if (!ev.origin.includes("mtpelerin.com")) return;
 
                 const data = ev.data;
 
                 if (data?.depositAddress) {
-                    console.log("[MTP][depositAddress]", data.depositAddress);
-
                     fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
                         method: "POST",
                         headers: {
