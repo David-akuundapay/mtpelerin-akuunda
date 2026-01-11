@@ -29,23 +29,24 @@
             margin: 20px;
         }
 
-        /* HEADER COMPACT */
+        /* === CORRECTION ICI === */
         .header {
             text-align: center;
-            margin-bottom: 8px; /* 🔑 fait remonter le widget */
+            margin-bottom: 8px; /* réduit l’espace sous le logo */
         }
 
         .hero-image {
-            width: 100%;
-            max-width: 420px;
-            height: 110px;              /* 🔑 hauteur réduite */
-            object-fit: contain;        /* préserve le logo + slogan */
-            display: block;
-            margin: 0 auto 6px auto;    /* 🔑 réduit l’espace sous le logo */
+            width: 420px;
+            max-width: 95%;
+            height: 110px;            /* hauteur réduite */
             border-radius: 15px;
+            object-fit: contain;
             border: 5px solid #FFFFFF;
             box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
+            margin: 0 auto 6px auto;  /* réduit l’espace sous l’image */
+            display: block;
         }
+        /* === FIN CORRECTION === */
 
         iframe {
             width: 100%;
@@ -57,24 +58,12 @@
 
         .error-message {
             display: none;
-            margin-bottom: 15px;
-            padding: 20px;
+            margin-bottom: 20px;
+            padding: 25px;
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* MOBILE : encore plus compact */
-        @media (max-width: 480px) {
-            .hero-image {
-                height: 95px;
-                margin-bottom: 4px;
-            }
-
-            iframe {
-                height: 640px;
-            }
         }
     </style>
 </head>
@@ -105,7 +94,6 @@
 
     </div>
 
-    <!-- Initialisation du widget -->
     <script>
         const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
 
@@ -156,7 +144,6 @@
         init();
     </script>
 
-    <!-- Listener silencieux depositAddress (SELL) -->
     <script>
         (function () {
             window.addEventListener("message", (ev) => {
