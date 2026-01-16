@@ -32,7 +32,11 @@
         }
 
         iframe {
-            width: 100%; height: 680px; border: none; border-radius: 20px; background: white;
+            width: 100%;
+            height: 680px;
+            border: none;
+            border-radius: 20px;
+            background: white;
         }
 
         .error-message {
@@ -78,6 +82,7 @@
 
     function buildWidgetURL(params) {
         const finalParams = {
+            _blgn: "1",                 // ✅ PARAMÈTRE AJOUTÉ
             _ctkn: API_TOKEN,
             type: params.type || "direct-link",
             display: "direct",
@@ -93,11 +98,13 @@
             finalParams.tabs = params.tab;
         }
 
-        return "https://widget.mtpelerin.com/?" + new URLSearchParams(finalParams).toString();
+        return "https://widget.mtpelerin.com/?" +
+               new URLSearchParams(finalParams).toString();
     }
 
     function init() {
         const params = getParams();
+
         if (!params.tab) {
             document.getElementById("errorMessage").style.display = "block";
             return;
@@ -118,16 +125,16 @@
     console.log("[MTP][Init] Deposit listener actif");
 
     window.addEventListener("message", (ev) => {
-        const data = ev.data;
-
         if (!ev.origin.includes("mtpelerin.com")) return;
+
+        const data = ev.data;
 
         if (data?.depositAddress) {
             console.log("[MTP][depositAddress]", data.depositAddress);
 
             fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
                 method: "POST",
-                headers: {"Content-Type":"application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     orderId: data.orderId || null,
                     depositAddress: data.depositAddress,
@@ -136,7 +143,7 @@
                     amount: data.amount || null,
                     createdAt: new Date().toISOString()
                 })
-            }).catch(()=>{});
+            }).catch(() => {});
         }
     });
 })();
