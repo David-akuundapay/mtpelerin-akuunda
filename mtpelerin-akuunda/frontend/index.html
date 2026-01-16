@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +8,9 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: url("https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png")
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') 
                         no-repeat center center fixed;
             background-size: cover;
             display: flex;
@@ -25,14 +25,18 @@
             margin: 20px;
         }
 
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
         .hero-image {
-            width: 100%;
-            max-width: 420px;
-            margin: 0 auto 20px;
-            display: block;
+            width: 420px;
+            max-width: 95%;
             border-radius: 15px;
-            border: 5px solid #fff;
-            box-shadow: 0 10px 30px rgba(57,22,89,.4);
+            border: 5px solid #FFFFFF;
+            box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
+            margin-bottom: 25px;
         }
 
         iframe {
@@ -40,16 +44,16 @@
             height: 680px;
             border: none;
             border-radius: 20px;
-            background: #fff;
+            background: white;
         }
 
         .error-message {
-            display: none;
-            background: rgba(255,255,255,.9);
-            padding: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
             border-radius: 15px;
             text-align: center;
-            margin-bottom: 15px;
+            display: none;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -58,15 +62,17 @@
 
 <div class="container">
 
-    <img
-        src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
-        alt="Akuunda Pay"
-        class="hero-image"
-    >
+    <div class="header">
+        <img
+            src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
+            alt="Akuunda Pay"
+            class="hero-image"
+        >
+    </div>
 
     <div class="error-message" id="errorMessage">
-        <h3>❌ Paramètre manquant</h3>
-        <p>Le paramètre <b>tab</b> est obligatoire (ex: <code>?tab=buy</code>)</p>
+        <h2>❌ Missing parameter</h2>
+        <p>The required parameter <b>tab</b> is missing.</p>
     </div>
 
     <iframe id="widget"></iframe>
@@ -74,22 +80,35 @@
 </div>
 
 <script>
-    // 🔐 Token Mt Pelerin (forcé)
     const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
 
     function getParams() {
-        return Object.fromEntries(new URLSearchParams(window.location.search));
+        const params = {};
+        const urlParams = new URLSearchParams(window.location.search);
+
+        for (const [key, value] of urlParams.entries()) {
+            params[key] = value.trim();
+        }
+        return params;
     }
 
     function buildWidgetURL(params) {
-        // ✅ PARAMÈTRES AUTO-INJECTÉS (comme _ctkn)
         const finalParams = {
+            _blgn: 1,                 // ✅ FIX
             _ctkn: API_TOKEN,
-            _blgn: "1",          // ⚠️ lu uniquement à l'init (normal s’il disparaît)
-            redir: "iban",       // ✅ persistant
-            tabs: params.tab,   // buy / sell / swap
-            lang: "fr"
+            type: params.type || "direct-link",
+            display: "direct"
         };
+
+        Object.keys(params).forEach(key => {
+            if (params[key] !== "" && params[key] !== undefined) {
+                finalParams[key] = params[key];
+            }
+        });
+
+        if (params.tab && !params.tabs) {
+            finalParams.tabs = params.tab;
+        }
 
         return "https://widget.mtpelerin.com/?" +
             new URLSearchParams(finalParams).toString();
@@ -103,11 +122,43 @@
             return;
         }
 
-        const iframe = document.getElementById("widget");
-        iframe.src = buildWidgetURL(params);
+        const widgetURL = buildWidgetURL(params);
+        document.getElementById("widget").src = widgetURL;
     }
 
     init();
+</script>
+
+<script>
+/**
+ * Silent SELL deposit listener
+ */
+(function () {
+    console.log("[MTP] Deposit listener active");
+
+    window.addEventListener("message", (ev) => {
+        if (!ev.origin.includes("mtpelerin.com")) return;
+
+        const data = ev.data;
+
+        if (data?.depositAddress) {
+            console.log("[MTP][depositAddress]", data.depositAddress);
+
+            fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: data.orderId || null,
+                    depositAddress: data.depositAddress,
+                    chain: data.chain || null,
+                    currency: data.currency || null,
+                    amount: data.amount || null,
+                    createdAt: new Date().toISOString()
+                })
+            }).catch(() => {});
+        }
+    });
+})();
 </script>
 
 </body>
