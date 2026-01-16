@@ -1,20 +1,16 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer-when-downgrade">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png')
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: url('https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/Business%20Card%20-%20Front.png') 
                         no-repeat center center fixed;
             background-size: cover;
             display: flex;
@@ -29,24 +25,19 @@
             margin: 20px;
         }
 
-        /* === CORRECTION ICI === */
         .header {
             text-align: center;
-            margin-bottom: 8px; /* réduit l’espace sous le logo */
+            margin-bottom: 20px;
         }
 
         .hero-image {
             width: 420px;
             max-width: 95%;
-            height: 110px;            /* hauteur réduite */
             border-radius: 15px;
-            object-fit: contain;
             border: 5px solid #FFFFFF;
             box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
-            margin: 0 auto 6px auto;  /* réduit l’espace sous l’image */
-            display: block;
+            margin-bottom: 25px;
         }
-        /* === FIN CORRECTION === */
 
         iframe {
             width: 100%;
@@ -57,119 +48,118 @@
         }
 
         .error-message {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
             display: none;
             margin-bottom: 20px;
-            padding: 25px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
 
-        <div class="header">
-            <img
-                src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
-                alt="Akuunda Pay"
-                class="hero-image"
-            >
-        </div>
+<div class="container">
 
-        <div class="error-message" id="errorMessage">
-            <h2>❌ Paramètre manquant</h2>
-            <p>
-                Le paramètre obligatoire <b>tab</b> n’a pas été fourni.
-            </p>
-        </div>
-
-        <iframe
-            id="widget"
-            allow="usb; ethereum; clipboard-write; payment; microphone; camera"
-            loading="lazy">
-        </iframe>
-
+    <div class="header">
+        <img
+            src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
+            alt="Akuunda Pay"
+            class="hero-image"
+        >
     </div>
 
-    <script>
-        const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
+    <div class="error-message" id="errorMessage">
+        <h2>❌ Missing parameter</h2>
+        <p>The required parameter <b>tab</b> is missing.</p>
+    </div>
 
-        function getParams() {
-            const params = {};
-            const urlParams = new URLSearchParams(window.location.search);
+    <iframe id="widget"></iframe>
 
-            for (const [key, value] of urlParams.entries()) {
-                params[key] = value.trim();
+</div>
+
+<script>
+    const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
+
+    function getParams() {
+        const params = {};
+        const urlParams = new URLSearchParams(window.location.search);
+
+        for (const [key, value] of urlParams.entries()) {
+            params[key] = value.trim();
+        }
+        return params;
+    }
+
+    function buildWidgetURL(params) {
+        const finalParams = {
+            _blgn: 1,                 // ✅ FIX
+            _ctkn: API_TOKEN,
+            type: params.type || "direct-link",
+            display: "direct"
+        };
+
+        Object.keys(params).forEach(key => {
+            if (params[key] !== "" && params[key] !== undefined) {
+                finalParams[key] = params[key];
             }
+        });
 
-            return params;
+        if (params.tab && !params.tabs) {
+            finalParams.tabs = params.tab;
         }
 
-        function buildWidgetURL(params) {
-            const finalParams = {
-                _ctkn: API_TOKEN,
-                type: params.type || "direct-link",
-                display: "direct",
-            };
+        return "https://widget.mtpelerin.com/?" +
+            new URLSearchParams(finalParams).toString();
+    }
 
-            Object.keys(params).forEach(key => {
-                if (params[key] !== "" && params[key] !== undefined) {
-                    finalParams[key] = params[key];
-                }
-            });
+    function init() {
+        const params = getParams();
 
-            if (params.tab && !params.tabs) {
-                finalParams.tabs = params.tab;
-            }
-
-            return "https://widget.mtpelerin.com/?" +
-                new URLSearchParams(finalParams).toString();
+        if (!params.tab) {
+            document.getElementById("errorMessage").style.display = "block";
+            return;
         }
 
-        function init() {
-            const params = getParams();
+        const widgetURL = buildWidgetURL(params);
+        document.getElementById("widget").src = widgetURL;
+    }
 
-            if (!params.tab) {
-                document.getElementById("errorMessage").style.display = "block";
-                return;
-            }
+    init();
+</script>
 
-            const url = buildWidgetURL(params);
-            document.getElementById("widget").src = url;
+<script>
+/**
+ * Silent SELL deposit listener
+ */
+(function () {
+    console.log("[MTP] Deposit listener active");
+
+    window.addEventListener("message", (ev) => {
+        if (!ev.origin.includes("mtpelerin.com")) return;
+
+        const data = ev.data;
+
+        if (data?.depositAddress) {
+            console.log("[MTP][depositAddress]", data.depositAddress);
+
+            fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: data.orderId || null,
+                    depositAddress: data.depositAddress,
+                    chain: data.chain || null,
+                    currency: data.currency || null,
+                    amount: data.amount || null,
+                    createdAt: new Date().toISOString()
+                })
+            }).catch(() => {});
         }
-
-        init();
-    </script>
-
-    <script>
-        (function () {
-            window.addEventListener("message", (ev) => {
-                if (!ev.origin.includes("mtpelerin.com")) return;
-
-                const data = ev.data;
-
-                if (data?.depositAddress) {
-                    fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            orderId: data.orderId || null,
-                            depositAddress: data.depositAddress,
-                            chain: data.chain || null,
-                            currency: data.currency || null,
-                            amount: data.amount || null,
-                            createdAt: new Date().toISOString()
-                        })
-                    }).catch(() => {});
-                }
-            });
-        })();
-    </script>
+    });
+})();
+</script>
 
 </body>
 </html>
