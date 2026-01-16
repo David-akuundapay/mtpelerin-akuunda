@@ -17,16 +17,12 @@
 
         .container { width: 100%; max-width: 450px; margin: 20px; }
 
-        .header { text-align: center; margin-bottom: 20px; }
-
         .hero-image {
             width: 420px;
-            height: auto;
             border-radius: 15px;
-            object-fit: contain;
-            border: 5px solid #FFFFFF;
-            box-shadow: 0 10px 30px rgba(57, 22, 89, 0.4);
-            margin: 0 auto 25px auto;
+            border: 5px solid #fff;
+            box-shadow: 0 10px 30px rgba(57,22,89,.4);
+            margin: 0 auto 25px;
             display: block;
             max-width: 95%;
         }
@@ -36,16 +32,15 @@
             height: 680px;
             border: none;
             border-radius: 20px;
-            background: white;
+            background: #fff;
         }
 
         .error-message {
-            background: rgba(255,255,255,0.9);
+            display: none;
+            background: rgba(255,255,255,.9);
             padding: 25px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            display: none;
             margin-bottom: 20px;
         }
     </style>
@@ -54,14 +49,13 @@
 <body>
 <div class="container">
 
-    <div class="header">
-        <img src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
-             alt="Akuunda Pay" class="hero-image">
-    </div>
+    <img class="hero-image"
+         src="https://raw.githubusercontent.com/David-akuundapay/mtpelerin-akuunda/main/mtpelerin-akuunda/images/brand-hero.jpg"
+         alt="Akuunda Pay">
 
     <div class="error-message" id="errorMessage">
         <h2>❌ Paramètre manquant</h2>
-        <p>Le paramètre obligatoire <b>tab</b> n’a pas été fourni.</p>
+        <p>Le paramètre <b>tab</b> est obligatoire.</p>
     </div>
 
     <iframe id="widget"></iframe>
@@ -72,28 +66,26 @@
     const API_TOKEN = "1c7a15d7-7243-4a77-a04e-c2b74061fa88";
 
     function getParams() {
-        const params = {};
-        const urlParams = new URLSearchParams(window.location.search);
-        for (const [key, value] of urlParams.entries()) {
-            params[key] = value.trim();
-        }
-        return params;
+        return Object.fromEntries(new URLSearchParams(window.location.search));
     }
 
     function buildWidgetURL(params) {
+
+        // 🔒 PARAMÈTRES FORCÉS (comme _ctkn)
         const finalParams = {
-            _blgn: "1",                 // ✅ PARAMÈTRE AJOUTÉ
-            _ctkn: API_TOKEN,
-            type: params.type || "direct-link",
-            display: "direct",
+            _blgn: "1",                 // ✅ AUTO-INJECTÉ
+            _ctkn: API_TOKEN,           // ✅ AUTO-INJECTÉ
+            type: "direct-link",
+            display: "direct"
         };
 
+        // ➕ Paramètres autorisés depuis l’URL
         Object.keys(params).forEach(key => {
-            if (params[key] !== "" && params[key] !== undefined) {
-                finalParams[key] = params[key];
-            }
+            if (["_blgn", "_ctkn"].includes(key)) return; // ⛔ protection
+            if (params[key]) finalParams[key] = params[key];
         });
 
+        // Normalisation tab → tabs
         if (params.tab && !params.tabs) {
             finalParams.tabs = params.tab;
         }
@@ -110,43 +102,10 @@
             return;
         }
 
-        const url = buildWidgetURL(params);
-        document.getElementById("widget").src = url;
+        document.getElementById("widget").src = buildWidgetURL(params);
     }
 
     init();
-</script>
-
-<script>
-/**
- * Listener silencieux pour récupérer depositAddress (SELL)
- */
-(function() {
-    console.log("[MTP][Init] Deposit listener actif");
-
-    window.addEventListener("message", (ev) => {
-        if (!ev.origin.includes("mtpelerin.com")) return;
-
-        const data = ev.data;
-
-        if (data?.depositAddress) {
-            console.log("[MTP][depositAddress]", data.depositAddress);
-
-            fetch("https://mtpay.akuunda-pay.io/api/mtpelerin/deposit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    orderId: data.orderId || null,
-                    depositAddress: data.depositAddress,
-                    chain: data.chain || null,
-                    currency: data.currency || null,
-                    amount: data.amount || null,
-                    createdAt: new Date().toISOString()
-                })
-            }).catch(() => {});
-        }
-    });
-})();
 </script>
 
 </body>
